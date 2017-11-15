@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QtWidgets>
+#include "servicedisplay.h"
 
 namespace Ui {
 class MainWindow;
@@ -21,12 +22,15 @@ private:
 
     QTreeWidget *treeWidget;
     QDockWidget *startDockWidget;
+    void loadFile(std::__cxx11::string filename);
+    void addService(std::__cxx11::string serviceName);
 
 private slots:
 
     void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
 
     //void on_treeWidget_itemDoubleClicked(int column);
+    void on_pushButton_file_clicked();
 };
 
 #endif // MAINWINDOW_H

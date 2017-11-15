@@ -1,5 +1,19 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QXmlSimpleReader>
+
+
+#include <QtWidgets>
+#include <QObject>
+#include <QDebug>
+#include <QApplication>
+#include <QMessageBox>
+
+
+
+#include <iostream>
+#include <fstream>
+#include "servicedisplay.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -83,3 +97,144 @@ void MainWindow::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int colu
     this->addDockWidget(Qt::RightDockWidgetArea, dockWidget);
 
 }
+
+
+
+void MainWindow::loadFile(std::string filename){
+    qDebug("function: loadFile\n");
+    QFile* xmlFile = new QFile(filename.c_str());
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::critical(this,"Load XML File Problem",
+                              "Couldn't open xmlfile.xml to load settings for download",
+                              QMessageBox::Ok);
+        return;
+    }
+    QXmlStreamReader* xmlReader = new QXmlStreamReader(xmlFile);
+
+    bool areaFound = false;
+    std::string areaName = "";
+
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError()) {
+        //qDebug() << "while " << xmlReader->name();
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement) {
+            if(xmlReader->name() == "service"){
+                areaFound = true;
+                //areaName = xmlReader->readElementText()
+                //qDebug() << "1: " << xmlReader->readElementText();
+                qDebug() << "1: " << xmlReader->name();
+                //qDebug() << "1: " << xmlReader->qualifiedName();
+                //qDebug() << "1: " << xmlReader->text();
+                //qDebug() << "1: " << xmlReader->namespaceUri();
+                foreach(const QXmlStreamAttribute &attr, xmlReader->attributes()) {
+                    if (attr.name().toString() == QLatin1String("name")) {
+                        QString attribute_value = attr.value().toString();
+                        qDebug() << "attr " << attribute_value;
+                        areaName = attribute_value.toStdString();
+                        addService(areaName);
+                        // do something
+                    }
+                }
+            } else if(xmlReader->name() == "sendIP" || xmlReader->name() == "pubsubIP"){
+
+                foreach(const QXmlStreamAttribute &attr, xmlReader->attributes()) {
+                    if (attr.name().toString() == QLatin1String("name")) {
+                        QString attribute_value = attr.value().toString();
+                        qDebug() << "name " << attribute_value;
+                    }
+                    if (attr.name().toString() == QLatin1String("comment")) {
+                        QString attribute_value = attr.value().toString();
+                        qDebug() << "comment " << attribute_value;
+                    }
+                    if (attr.name().toString() == QLatin1String("number")) {
+                        QString attribute_value = attr.value().toString();
+                        qDebug() << "number " << attribute_value;
+                    }
+                    if (attr.name().toString() == QLatin1String("supportInReplay")) {
+                        QString attribute_value = attr.value().toString();
+                        qDebug() << "supportInReplay " << attribute_value;
+                    }
+                }
+
+            }
+
+
+        } else if (token == QXmlStreamReader::EndElement){
+            if(xmlReader->name() == "service"){
+                qDebug() << "end: " << xmlReader->name();
+                areaFound = false;
+                areaName = "";
+            }
+
+
+        }
+
+    }
+
+    if(xmlReader->hasError()) {
+            QMessageBox::critical(this,
+            "xmlFile.xml Parse Error",xmlReader->errorString(),
+            QMessageBox::Ok);
+            return;
+    }
+
+    /*QXmlSimpleReader xmlReader;
+    QXmlInputSource *source = new QXmlInputSource(filename);
+
+    Handler *handler = new Handler;
+    xmlReader.setContentHandler(handler);
+    xmlReader.setErrorHandler(handler);
+
+    bool ok = xmlReader.parse(source);
+
+    if (!ok){
+        std::cout << "Parsing failed." << std::endl;
+    }*/
+    /*
+    QFont font("Monospace");
+    font.setStyleHint(QFont::TypeWriter);
+    //myQtextEdit->setFont(font);
+    if ( !filename.empty() )
+    {
+        std::ifstream ifStream(filename); // load in file from read filename
+        std::string line;
+        while(std::getline(ifStream, line)){
+            //myQtextEdit->append(line.c_str());
+            qDebug() << line.c_str();
+        }
+
+        ifStream.close();
+    }*/
+
+}
+
+void MainWindow::on_pushButton_file_clicked()
+{
+    qDebug("function: on_pushButton_newFDF_clicked\n");
+    // open dialog to select file
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Format Definition File"), QString(),tr("All Files (*. *.xml )"));
+
+    if(fileName == ""){
+        qDebug() << "No File Selected";
+        return;
+    }
+
+    loadFile(fileName.toStdString());
+
+}
+
+//! launch of a service window window
+// ########################################################
+void MainWindow::addService(std::__cxx11::string serviceName){
+  QDockWidget * qDockWidget_service = new QDockWidget("serviceName", this);
+  qDockWidget_service->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea );
+  qDockWidget_service->setFloating(true);
+  qDockWidget_service->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+  ServiceDisplay* myNewWindow = new ServiceDisplay(qDockWidget_service, this);
+
+  this->addDockWidget(Qt::BottomDockWidgetArea, qDockWidget_service);
+  }
