@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QtWidgets>
 #include <QMainWindow>
+#include <QtCharts>
 
 class ServiceDisplay : public QWidget
 {
@@ -14,11 +15,19 @@ public:
     ServiceDisplay();
     ServiceDisplay(QDockWidget *dockWidget, QObject *myWindow);
     ~ServiceDisplay();
-    void addDataSend();
-    void addDataReception();
+    void addDataSend(std::string title);
+    void addDataReception(std::string title);
 
 private:
     QObject *mainWindow; // contains the QObject from the main window
+    QVBoxLayout *layout_vertical_Send;
+    QVBoxLayout *layout_vertical_Reception;
+
+    std::vector<QPushButton*> mySendButtons;
+
+    std::vector<QLabel*> myReceptionLabel;
+
+    std::vector<QChart*> myReceptionChart;
 };
 
 #endif // SERVICEDISPLAY_H

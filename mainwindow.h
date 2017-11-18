@@ -25,12 +25,16 @@ private:
     void loadFile(std::__cxx11::string filename);
     void addService(std::__cxx11::string serviceName);
 
+    //std::vector<QPushButton> mySendButtons;
+    std::vector<ServiceDisplay*> myServiceDisplays;
+
 private slots:
 
     void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
 
     //void on_treeWidget_itemDoubleClicked(int column);
     void on_pushButton_file_clicked();
+    void on_pushButton_connect_clicked();
 };
 
 #endif // MAINWINDOW_H

@@ -22,34 +22,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     treeWidget = new QTreeWidget();
-
-    QTreeWidgetItem *myItem = new QTreeWidgetItem(0);
-    myItem->setText(0, tr("Cities"));
-
-    QTreeWidgetItem *myItem2 = new QTreeWidgetItem(0);
-    myItem2->setText(0, tr("Cities2"));
-
-    QTreeWidgetItem *myItem3 = new QTreeWidgetItem(0);
-    myItem3->setText(0, tr("Cities3"));
-
-    QTreeWidgetItem *telecommand = new QTreeWidgetItem(0);
-    telecommand->setText(0, tr("Telecommand"));
-
-
-    QTreeWidgetItem *telemetry = new QTreeWidgetItem(0);
-    telemetry->setText(0, tr("Telemetry"));
-
-
-    treeWidget->addTopLevelItem(myItem);
-    treeWidget->addTopLevelItem(myItem2);
-    treeWidget->addTopLevelItem(myItem3);
-    myItem3->addChild(telemetry);
-    myItem3->addChild(telecommand);
+    treeWidget->setMaximumWidth(200);
 
 
 
-
-    ui->horizontalLayout->addWidget(treeWidget);
+    ui->verticalLayout->addWidget(treeWidget);
 
     QObject::connect(treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(on_treeWidget_itemDoubleClicked(QTreeWidgetItem*,  int)));
 
@@ -114,6 +91,8 @@ void MainWindow::loadFile(std::string filename){
     bool areaFound = false;
     std::string areaName = "";
 
+    QTreeWidgetItem *myCurrentTreeWidgetItem;
+
     //Parse the XML until we reach end of it
     while(!xmlReader->atEnd() && !xmlReader->hasError()) {
         //qDebug() << "while " << xmlReader->name();
@@ -137,14 +116,25 @@ void MainWindow::loadFile(std::string filename){
                         areaName = attribute_value.toStdString();
                         addService(areaName);
                         // do something
+                        myCurrentTreeWidgetItem = new QTreeWidgetItem(0);
+                        myCurrentTreeWidgetItem->setText(0,attribute_value);
+                        treeWidget->addTopLevelItem(myCurrentTreeWidgetItem);
+
+
                     }
                 }
-            } else if(xmlReader->name() == "sendIP" || xmlReader->name() == "pubsubIP"){
+            } else if(xmlReader->name() == "pubsubIP"){
 
                 foreach(const QXmlStreamAttribute &attr, xmlReader->attributes()) {
                     if (attr.name().toString() == QLatin1String("name")) {
                         QString attribute_value = attr.value().toString();
                         qDebug() << "name " << attribute_value;
+
+                        QTreeWidgetItem *subTreeWidgetItem = new QTreeWidgetItem(0);
+                        subTreeWidgetItem->setText(0,attribute_value);
+                        myCurrentTreeWidgetItem->addChild(subTreeWidgetItem);
+
+                        myServiceDisplays.front()->addDataReception(attribute_value.toStdString());
                     }
                     if (attr.name().toString() == QLatin1String("comment")) {
                         QString attribute_value = attr.value().toString();
@@ -160,6 +150,30 @@ void MainWindow::loadFile(std::string filename){
                     }
                 }
 
+            } else if(xmlReader->name() == "sendIP"){
+                //addDataReception
+                foreach(const QXmlStreamAttribute &attr, xmlReader->attributes()) {
+                    if (attr.name().toString() == QLatin1String("name")) {
+                        QString attribute_value = attr.value().toString();
+                        qDebug() << "name " << attribute_value;
+                        QTreeWidgetItem *subTreeWidgetItem = new QTreeWidgetItem(0);
+                        subTreeWidgetItem->setText(0,attribute_value);
+                        myCurrentTreeWidgetItem->addChild(subTreeWidgetItem);
+                        myServiceDisplays.front()->addDataSend(attribute_value.toStdString());
+                    }
+                    if (attr.name().toString() == QLatin1String("comment")) {
+                        QString attribute_value = attr.value().toString();
+                        qDebug() << "comment " << attribute_value;
+                    }
+                    if (attr.name().toString() == QLatin1String("number")) {
+                        QString attribute_value = attr.value().toString();
+                        qDebug() << "number " << attribute_value;
+                    }
+                    if (attr.name().toString() == QLatin1String("supportInReplay")) {
+                        QString attribute_value = attr.value().toString();
+                        qDebug() << "supportInReplay " << attribute_value;
+                    }
+                }
             }
 
 
@@ -182,33 +196,7 @@ void MainWindow::loadFile(std::string filename){
             return;
     }
 
-    /*QXmlSimpleReader xmlReader;
-    QXmlInputSource *source = new QXmlInputSource(filename);
 
-    Handler *handler = new Handler;
-    xmlReader.setContentHandler(handler);
-    xmlReader.setErrorHandler(handler);
-
-    bool ok = xmlReader.parse(source);
-
-    if (!ok){
-        std::cout << "Parsing failed." << std::endl;
-    }*/
-    /*
-    QFont font("Monospace");
-    font.setStyleHint(QFont::TypeWriter);
-    //myQtextEdit->setFont(font);
-    if ( !filename.empty() )
-    {
-        std::ifstream ifStream(filename); // load in file from read filename
-        std::string line;
-        while(std::getline(ifStream, line)){
-            //myQtextEdit->append(line.c_str());
-            qDebug() << line.c_str();
-        }
-
-        ifStream.close();
-    }*/
 
 }
 
@@ -227,14 +215,23 @@ void MainWindow::on_pushButton_file_clicked()
 
 }
 
+void MainWindow::on_pushButton_connect_clicked()
+{
+    qDebug("function: on_pushButton_connect_clicked\n");
+
+
+
+}
+
 //! launch of a service window window
 // ########################################################
 void MainWindow::addService(std::__cxx11::string serviceName){
-  QDockWidget * qDockWidget_service = new QDockWidget("serviceName", this);
+  QDockWidget * qDockWidget_service = new QDockWidget(serviceName.c_str(), this);
   qDockWidget_service->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea );
   qDockWidget_service->setFloating(true);
   qDockWidget_service->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
   ServiceDisplay* myNewWindow = new ServiceDisplay(qDockWidget_service, this);
+  myServiceDisplays.push_back(myNewWindow);
 
   this->addDockWidget(Qt::BottomDockWidgetArea, qDockWidget_service);
   }
