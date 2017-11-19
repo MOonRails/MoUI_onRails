@@ -1,4 +1,6 @@
 #include "servicedisplay.h"
+#include "publiship.h"
+#include "sendip.h"
 
 #include <QtWidgets>
 #include <QObject>
@@ -31,7 +33,6 @@ ServiceDisplay::ServiceDisplay(QDockWidget *dockWidget, QObject *myWindow)
     line->setFrameShadow(QFrame::Sunken);
 
 
-    //layout_vertical->addWidget(myDisplayTable);
     layout_horizontal->addLayout(layout_vertical_Reception);
     layout_horizontal->addWidget(line);
     layout_horizontal->addLayout(layout_vertical_Send);
@@ -52,60 +53,27 @@ ServiceDisplay::~ServiceDisplay()
 // ###################################################################
 void ServiceDisplay::addDataSend(std::string title)
 {
-    qDebug()<< "addDataSend\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\n\n";
-    //QVBoxLayout *layout_addDataReception;
-    QLabel* myTitle = new QLabel(title.c_str());
-    QLineEdit* myLinedit = new QLineEdit();
-    QPushButton* myPushButtonSend = new QPushButton("Send");
-    QHBoxLayout *layout_horizontalSendData = new QHBoxLayout;
-    layout_horizontalSendData->addWidget(myLinedit);
-    layout_horizontalSendData->addWidget(myPushButtonSend);
-    layout_vertical_Send->addWidget(myTitle);
-    layout_vertical_Send->addLayout(layout_horizontalSendData);
+    SendIP* sendip = new SendIP(layout_vertical_Send, title);
+
 }
 
 //! add a data display window
 // ###################################################################
 void ServiceDisplay::addDataReception(std::string title)
 {
-    qDebug()<< "addDataReception\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\n\n";
-    //QVBoxLayout *layout_addDataReception;
-    QLabel* myTitle = new QLabel(title.c_str());
-    //QToolBox* myToolBox = new QToolBox();
-
-    QLabel* data = new QLabel("data");
-    //myReceptionLabel.push_back(data);
-    /*myToolBox->insertItem(0,data, "test");
-
-    myToolBox->insertItem(0,data, "test");
-    myToolBox->insertItem(0,data, "test");
-
-    myToolBox->insertItem(0,data, "test");*/
+    //qDebug()<< "addDataReception\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\n\n";
 
 
-    // initialise graph
-    QChart *chart = new QChart();
-    myReceptionChart.push_back(chart);
-    chart->legend()->show();
-    chart->createDefaultAxes();
-    chart->setTitle(title.c_str());
-
-    QChartView *chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
+    PublishIP* myPublish = new PublishIP(layout_vertical_Reception, title);
 
 
-    QLineSeries *series = new QLineSeries();
-    series->setName(title.c_str());
-    // iterate over current row
-    for (int i = 0; i < 10; ++i) {
-        series->append(i,i );
-    }
-
-    chart->addSeries(series);
-
-    layout_vertical_Reception->addWidget(myTitle);
-    layout_vertical_Reception->addWidget(data);
-    layout_vertical_Reception->addWidget(chartView);
-    //layout_vertical_Reception->addWidget(myToolBox);
+    myPublish->setValue(1);
+    myPublish->setValue(2);
+    myPublish->setValue(11);
+    myPublish->setValue(3);
+    myPublish->setValue(4);
+    myPublish->setValue(15);
+    myPublish->setValue(7);
+    myPublish->setValue(8);
 }
 

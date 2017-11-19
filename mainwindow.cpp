@@ -8,8 +8,8 @@
 #include <QDebug>
 #include <QApplication>
 #include <QMessageBox>
-
-
+#include <QTcpSocket>
+#include <QHostAddress>
 
 #include <iostream>
 #include <fstream>
@@ -24,31 +24,57 @@ MainWindow::MainWindow(QWidget *parent) :
     treeWidget = new QTreeWidget();
     treeWidget->setMaximumWidth(200);
 
+    pushButton_file = new QPushButton("Open");
+    pushButton_file->setFixedWidth(75);
+    pushButton_connect = new QPushButton("Connect");
+    pushButton_connect->setFixedWidth(75);
+    QObject::connect(pushButton_file, SIGNAL(clicked()), this , SLOT(on_pushButton_file_clicked())  );
+    QObject::connect(pushButton_connect, SIGNAL(clicked()), this , SLOT(on_pushButton_connect_clicked())  );
+    lineEdit_ip = new QLineEdit();
+    lineEdit_ip->setFixedWidth(75);
+    lineEdit_ip->setText("127.0.0.1");
+    lineEdit_port = new QLineEdit();
+    lineEdit_port->setText("3000");
+    lineEdit_port->setFixedWidth(75);
 
 
-    ui->verticalLayout->addWidget(treeWidget);
+
+
+
 
     QObject::connect(treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(on_treeWidget_itemDoubleClicked(QTreeWidgetItem*,  int)));
 
 
+    QHBoxLayout *buttonsHorizontallayout = new QHBoxLayout;
+    //QVBoxLayout *mainVerticalLayout = new QVBoxLayout;
+
+    /*buttonsHorizontallayout->addWidget(pushButton_file);
+    buttonsHorizontallayout->addWidget(lineEdit_ip);
+    buttonsHorizontallayout->addWidget(lineEdit_port);
+    buttonsHorizontallayout->addWidget(pushButton_connect);
+    ui->verticalLayout->addLayout(buttonsHorizontallayout);*/
+
+    ui->verticalLayout->addWidget(pushButton_file);
+    ui->verticalLayout->addWidget(lineEdit_ip);
+    ui->verticalLayout->addWidget(lineEdit_port);
+    ui->verticalLayout->addWidget(pushButton_connect);
+    ui->verticalLayout->addWidget(treeWidget);
 
 
-    //Converter* converter = new Converter();
 
-    QDockWidget * dockWidget = new QDockWidget(tr("MoOnRails"), this);
+
+
+    /*QDockWidget * dockWidget = new QDockWidget(tr("MoOnRails"), this);
     dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea );
     dockWidget->setFloating(false);
     this->addDockWidget(Qt::RightDockWidgetArea, dockWidget);
-
     QWidget* multiWidget = new QWidget();
-    QVBoxLayout *mainVerticalLayout = new QVBoxLayout;
-
+    QVBoxLayout *dockVerticalLayout = new QVBoxLayout;
     QLabel *title = new QLabel("MoOnRails");
+    dockVerticalLayout->addWidget(title);
+    multiWidget->setLayout(dockVerticalLayout);
+    dockWidget->setWidget(multiWidget);*/
 
-    mainVerticalLayout->addWidget(title);
-
-    multiWidget->setLayout(mainVerticalLayout);
-    dockWidget->setWidget(multiWidget);
 
 }
 
@@ -215,23 +241,124 @@ void MainWindow::on_pushButton_file_clicked()
 
 }
 
-void MainWindow::on_pushButton_connect_clicked()
-{
-    qDebug("function: on_pushButton_connect_clicked\n");
-
-
-
-}
 
 //! launch of a service window window
 // ########################################################
 void MainWindow::addService(std::__cxx11::string serviceName){
   QDockWidget * qDockWidget_service = new QDockWidget(serviceName.c_str(), this);
   qDockWidget_service->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea );
-  qDockWidget_service->setFloating(true);
+  qDockWidget_service->setFloating(false);
   qDockWidget_service->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
   ServiceDisplay* myNewWindow = new ServiceDisplay(qDockWidget_service, this);
   myServiceDisplays.push_back(myNewWindow);
 
-  this->addDockWidget(Qt::BottomDockWidgetArea, qDockWidget_service);
+  this->addDockWidget(Qt::RightDockWidgetArea, qDockWidget_service);
+  //ui->centralWidget->setMinimumWidth(700);
+  //ui->MainWindow->setMinimumWidth(700);
   }
+
+
+
+
+//! connecting to an existing server
+// ###################################################################
+void MainWindow::on_pushButton_connect_clicked(){
+    qDebug() << "on_pushButton_connect_clicked\n";
+
+/*
+    if(connectButtonStatus == false){
+        disconnecting();
+        return;
+    }
+
+
+    myListenButton->setDisabled(true);
+    myConnectButton->setText("Disconnect");
+    myConnectButton->setIcon(QIcon(":/icons/disconnect2.png"));
+    myStatusLabel->setText("<font color='orange'>Connecting</font>");
+    connectButtonStatus = false;
+    myIP_Edit->setDisabled(true);
+    myPortEdit->setDisabled(true);
+*/
+    clientConnection = new QTcpSocket();
+
+    in = new QDataStream();
+    tcpSocket = new QTcpSocket(this);
+    in->setDevice(tcpSocket);
+    in->setVersion(QDataStream::Qt_4_0);
+
+
+    clientConnection->connectToHost(QHostAddress(lineEdit_ip->text()), lineEdit_port->text().toInt());
+
+    QObject::connect(   clientConnection,   SIGNAL(connected())  ,    this   ,    SLOT(inComingFromServer())   );
+
+
+}
+
+
+
+void MainWindow::inComingFromServer(){
+    qDebug() << "inComingFromServer\n";
+/*
+
+    std::string myLabelString = "";
+    myLabelString += "<font color='green'>";
+    myLabelString += clientConnection->peerAddress().toString().toStdString();
+    myLabelString += "</font>";
+    myStatusLabel->setText(myLabelString.c_str());
+
+    QTimer *timer = new QTimer;
+    timer->setSingleShot(true);*/
+
+
+    QObject::connect(   clientConnection,   SIGNAL(disconnected())  ,    this   ,    SLOT(disconnected())   );
+
+
+    in->startTransaction();
+
+
+
+    quint8 nextByte;
+    std::string retrievedString = "";
+    std::string binaryString = "";
+
+    int startingCol = 0;
+    if(leftoverIncomingData_column != -1){
+        //qDebug() << "using leftover data " << leftoverIncomingData.length();
+        binaryString = leftoverIncomingData;
+        startingCol = leftoverIncomingData_column;
+        leftoverIncomingData = "";
+    }
+
+    // loop until all data is reveived
+    while ( !in->atEnd() ) {
+        *in >> nextByte;
+        //qDebug() << "nextByte" << nextByte << "\n";
+        QString myQString;
+        myQString.append( tr("%1").arg(nextByte,2,16).replace(" ", "0") );
+        //qDebug() << "myQString" << tr("%1").arg(nextByte,2,16) << "\n";
+        retrievedString += myQString.toStdString();
+    }
+
+
+    // check if the retrieved data is empty
+    if(retrievedString.length() == 0){
+        qDebug() << "ERROR: empty frame\n";
+        return;
+    }
+
+
+    // print hex data to consol
+    //if(preferences->debugDataReceptionHex == true){
+        qDebug() << "myReveived hex:\n";
+        qDebug() << retrievedString.c_str() << "\n";
+    //}
+}
+
+
+
+void MainWindow::disconnected(){
+    qDebug() << "disconnected\n";
+
+}
+

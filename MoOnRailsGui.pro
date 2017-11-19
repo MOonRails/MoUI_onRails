@@ -24,12 +24,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 QT += charts
+QT += network
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    servicedisplay.cpp
+    servicedisplay.cpp \
+    sendip.cpp \
+    publiship.cpp
 
 HEADERS  += mainwindow.h \
-    servicedisplay.h
+    servicedisplay.h \
+    sendip.h \
+    publiship.h
 
 FORMS    += mainwindow.ui
