@@ -7,19 +7,31 @@
 #include <QtWidgets>
 #include <QMainWindow>
 #include <QtCharts>
+#include "networkinterface.h"
+#include "mainwindow.h"
 
 class SendIP : public QWidget
 {
     Q_OBJECT
 public:
-    SendIP(QVBoxLayout *layout_base, std::__cxx11::string title);
+    SendIP(NetworkInterface* myNetworkInterface, QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay,QMainWindow * mymainwindow, bool dock);
     ~SendIP();
 
     QLineEdit* myLinedit;
-    QPushButton* myPushButtonSend;
+    //QPushButton* myPushButtonSend;
+    void openWidget();
+    std::string number;
 
 private slots:
     void sendData();
+
+
+private:
+    NetworkInterface* networkInterface;
+    //QHBoxLayout *layout_horizontal;
+    //QVBoxLayout *layout_vertical;
+    QMainWindow *window;
+    std::string name,comment,supportInReplay,area,list,service,field = "";
 };
 
 #endif // SENDIP_H

@@ -4,8 +4,11 @@
 #include <QMainWindow>
 #include <QtWidgets>
 #include <QTcpSocket>
-#include "servicedisplay.h"
+
 #include <QDataStream>
+#include "servicedisplay.h"
+#include "networkinterface.h"
+#include <vector>
 
 namespace Ui {
 class MainWindow;
@@ -28,18 +31,20 @@ private:
     void addService(std::__cxx11::string serviceName);
 
     //std::vector<QPushButton> mySendButtons;
-    std::vector<ServiceDisplay*> myServiceDisplays;
+    //std::vector<ServiceDisplay*>myServiceDisplays;
 
     QPushButton* pushButton_file;
-    QPushButton* pushButton_connect;
+    /*QPushButton* pushButton_connect;
     QLineEdit* lineEdit_ip;
-    QLineEdit* lineEdit_port;
+    QLineEdit* lineEdit_port;*/
 
     QTcpSocket *clientConnection;
     QDataStream *in;
     QTcpSocket* tcpSocket;
     int leftoverIncomingData_column = -1;
     std::string leftoverIncomingData = "";
+
+    NetworkInterface* networkInterface;
 
 private slots:
 

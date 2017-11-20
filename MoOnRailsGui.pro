@@ -30,11 +30,13 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     servicedisplay.cpp \
     sendip.cpp \
-    publiship.cpp
+    publiship.cpp \
+    networkinterface.cpp
 
 HEADERS  += mainwindow.h \
     servicedisplay.h \
     sendip.h \
-    publiship.h
+    publiship.h \
+    networkinterface.h
 
 FORMS    += mainwindow.ui

@@ -1,13 +1,20 @@
 #include "publiship.h"
-
+#include "networkinterface.h"
 
 //! constructor
 // ###################################################################
-PublishIP::PublishIP(QVBoxLayout *layout_base, std::string title)
+PublishIP::PublishIP(NetworkInterface* myNetworkInterface, QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay)
 {
     //qDebug()<< "addDataReception\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\n\n";
-    title += ": ";
-    QLabel* myTitle = new QLabel(title.c_str());
+    networkInterface = myNetworkInterface;
+
+
+    name = myName;
+    comment = myComment;
+    myNumber = myNumber;
+    mySupportInReplay = mySupportInReplay;
+    myName += ": ";
+    QLabel* myTitle = new QLabel(myName.c_str());
     data = new QLabel("#VALUE");
     chart = new QChart();
 
@@ -22,13 +29,13 @@ PublishIP::PublishIP(QVBoxLayout *layout_base, std::string title)
     //myReceptionChart.push_back(chart);
     chart->legend()->show();
     chart->createDefaultAxes();
-    chart->setTitle(title.c_str());
+    chart->setTitle(myName.c_str());
 
 
 
 
     series = new QLineSeries();
-    series->setName(title.c_str());
+    series->setName(myName.c_str());
     chart->addSeries(series);
 
     chartView = new QChartView(chart);

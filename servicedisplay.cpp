@@ -2,6 +2,7 @@
 #include "publiship.h"
 #include "sendip.h"
 
+
 #include <QtWidgets>
 #include <QObject>
 #include <QDebug>
@@ -23,6 +24,10 @@ ServiceDisplay::ServiceDisplay()
 // ###################################################################
 ServiceDisplay::ServiceDisplay(QDockWidget *dockWidget, QObject *myWindow)
 {
+    window = myWindow;
+    //Ui::MainWindow * myUi;
+    //myUi->statusBar->showMessage(tr("Ready2"));
+    //statusBar()->showMessage(tr("Ready2"));
     QWidget* multiWidget = new QWidget();
     QHBoxLayout *layout_horizontal = new QHBoxLayout;
     layout_vertical_Send = new QVBoxLayout;
@@ -51,21 +56,26 @@ ServiceDisplay::~ServiceDisplay()
 
 //! add a data sending window
 // ###################################################################
-void ServiceDisplay::addDataSend(std::string title)
+void ServiceDisplay::addDataSend(NetworkInterface* myNetworkInterface,std::string name, std::string comment, std::string number, std::string supportInReplay,QMainWindow * mymainwindow)
 {
-    SendIP* sendip = new SendIP(layout_vertical_Send, title);
+    SendIP* sendip = new SendIP(myNetworkInterface, layout_vertical_Send, name, comment, number, supportInReplay,mymainwindow, false);
+    //sendip->openWidget();
+    //sendipList.push_back(sendip);
+
+    //SendIP* sendip2 = new SendIP(myNetworkInterface, layout_vertical_Send, name, comment, number, supportInReplay,mymainwindow, true);
 
 }
 
 //! add a data display window
 // ###################################################################
-void ServiceDisplay::addDataReception(std::string title)
+void ServiceDisplay::addDataReception(NetworkInterface* myNetworkInterface, std::string name, std::string comment, std::string number, std::string supportInReplay)
 {
     //qDebug()<< "addDataReception\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\n\n";
 
+    networkInterface = myNetworkInterface;
+    PublishIP* myPublish = new PublishIP(myNetworkInterface, layout_vertical_Reception, name, comment, number, supportInReplay);
 
-    PublishIP* myPublish = new PublishIP(layout_vertical_Reception, title);
-
+    publishipList.push_back(myPublish);
 
     myPublish->setValue(1);
     myPublish->setValue(2);
@@ -77,3 +87,12 @@ void ServiceDisplay::addDataReception(std::string title)
     myPublish->setValue(8);
 }
 
+
+//!
+// ###################################################################
+void ServiceDisplay::findPublishList(std::string myNumber)
+{
+    for (int i = 0; i < publishipList.size(); ++i) {
+        qDebug() <<  publishipList[i]->number.c_str();//"publish number " <<
+    }
+}
