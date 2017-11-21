@@ -40,8 +40,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
-    networkInterface = new NetworkInterface(ui->verticalLayout);
-    //networkInterface = new NetworkInterface(ui->verticalLayout, this, ui);
+    //networkInterface = new NetworkInterface(ui->verticalLayout);
+    networkInterface = new NetworkInterface(ui->verticalLayout, this, ui);
 
 
     QObject::connect(treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(on_treeWidget_itemDoubleClicked(QTreeWidgetItem*,  int)));
@@ -296,7 +296,7 @@ void MainWindow::addService(std::__cxx11::string serviceName){
   qDockWidget_service->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea );
   qDockWidget_service->setFloating(false);
   qDockWidget_service->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-  Service_Display* myNewWindow = new Service_Display(qDockWidget_service, this);
+  Service_Display* myNewWindow = new Service_Display(qDockWidget_service, this, networkInterface);
   //networkInterface->myServices.push_back(myNewWindow);
   myServiceDisplays.push_back(myNewWindow);
 

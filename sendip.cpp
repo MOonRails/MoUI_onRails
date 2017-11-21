@@ -5,7 +5,7 @@
 //! constructor
 // ###################################################################
 //SendIP::SendIP(NetworkInterface* myNetworkInterface, QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay, QMainWindow * mymainwindow, bool dock)
-SendIP::SendIP( QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay, bool dock)
+SendIP::SendIP( QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay,NetworkInterface* myNetworkInterface, bool dock)
 {
     //window = mymainwindow;
     qDebug() << "SendIP number " << myNumber.c_str() << " supportInReplay " << mySupportInReplay.c_str();
@@ -16,6 +16,8 @@ SendIP::SendIP( QVBoxLayout *layout_base,std::string myName, std::string myComme
     supportInReplay = mySupportInReplay;
     QLabel* myTitle = new QLabel(name.c_str());
     myLinedit = new QLineEdit();
+
+    networkInterface=myNetworkInterface;
     QPushButton* myPushButtonSend = new QPushButton("Send");
     QObject::connect(myPushButtonSend, SIGNAL(clicked()), this , SLOT(sendData())  );
 
@@ -74,7 +76,7 @@ void SendIP::sendData()
     ///
     std::string mySendString = number + std::string(":") + myLinedit->text().toStdString();
     //qDebug() << "sendipSend " << mySendString.c_str() << " number " << number.c_str();
-    //networkInterface->sendString(mySendString);
+    networkInterface->sendString(mySendString);
 
 }
 

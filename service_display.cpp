@@ -12,8 +12,9 @@ Service_Display::Service_Display()
 
 //! constructor
 // ###################################################################
-Service_Display::Service_Display(QDockWidget *dockWidget, QObject *myWindow)
+Service_Display::Service_Display(QDockWidget *dockWidget, QObject *myWindow, NetworkInterface *myNetworkInterface)
 {
+    networkInterface=myNetworkInterface;
     //window = myWindow;
     //Ui::MainWindow * myUi;
     //myUi->statusBar->showMessage(tr("Ready2"));
@@ -35,6 +36,12 @@ Service_Display::Service_Display(QDockWidget *dockWidget, QObject *myWindow)
     pushButton_send = new QPushButton("Send");
     pushButton_send->setMaximumWidth(100);
 
+    QObject::connect(pushButton_send, SIGNAL(clicked()), this , SLOT(on_pushButton_send_clicked())  );
+
+    QFrame* line2 = new QFrame();
+    line2->setFrameShape(QFrame::HLine);
+    line2->setFrameShadow(QFrame::Sunken);
+
     layout_horizontal_genericSend->addWidget(myLineEdit);
     layout_horizontal_genericSend->addWidget(pushButton_send);
 
@@ -44,6 +51,7 @@ Service_Display::Service_Display(QDockWidget *dockWidget, QObject *myWindow)
     layout_horizontal->addLayout(layout_vertical_Send);
 
     layout_vertical->addLayout(layout_horizontal_genericSend);
+    layout_vertical->addWidget(line2);
     layout_vertical->addLayout(layout_horizontal);
     multiWidget->setLayout(layout_vertical);
 
@@ -64,7 +72,7 @@ Service_Display::~Service_Display()
 //void ServiceDisplay::addDataSend(std::string name, std::string comment, std::string number, std::string supportInReplay,QMainWindow * mymainwindow)
 void Service_Display::addDataSend(std::string name, std::string comment, std::string number, std::string supportInReplay)
 {
-    SendIP* sendip = new SendIP(layout_vertical_Send, name, comment, number, supportInReplay, false);
+    SendIP* sendip = new SendIP(layout_vertical_Send, name, comment, number, supportInReplay,networkInterface, false);
     //sendip->openWidget();
     //sendipList.push_back(sendip);
 
@@ -103,4 +111,15 @@ void Service_Display::findPublishList(std::string myNumber)
     //for (int i = 0; i < publishipList.size(); ++i) {
     //    qDebug() <<  publishipList[i]->number.c_str();//"publish number " <<
     //}
+}
+
+
+
+//!
+// ###################################################################
+void Service_Display::on_pushButton_send_clicked()
+{
+    std::string mySendString = myLineEdit->text().toStdString();
+    //qDebug() << "sendipSend " << mySendString.c_str() << " number " << number.c_str();
+    networkInterface->sendString(mySendString);
 }

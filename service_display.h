@@ -15,13 +15,14 @@
 
 #include "publiship.h"
 #include "sendip.h"
+#include "networkinterface.h"
 
 class Service_Display : public QWidget
 {
     Q_OBJECT
 public:
     Service_Display();
-    Service_Display(QDockWidget *dockWidget, QObject *myWindow);
+    Service_Display(QDockWidget *dockWidget, QObject *myWindow,NetworkInterface* myNetworkInterface);
     ~Service_Display();
 
     void addDataSend(std::string name, std::string comment, std::string number, std::string supportInReplay);
@@ -33,7 +34,7 @@ private:
     QVBoxLayout *layout_vertical_Send;
     QVBoxLayout *layout_vertical_Reception;
 
-
+    NetworkInterface* networkInterface;
 
     //std::vector<QPushButton*> mySendButtons;
     //std::vector<QLabel*> myReceptionLabel;
@@ -44,6 +45,8 @@ private:
 
 
     //QObject *window;
+private slots:
+    void on_pushButton_send_clicked();
 
 };
 #endif // SERVICE_DISPLAY_H

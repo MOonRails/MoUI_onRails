@@ -10,10 +10,10 @@
 
 //! constructor
 // ###################################################################
-//NetworkInterface::NetworkInterface(QVBoxLayout *layout_base, QMainWindow * mymainwindow,Ui::MainWindow * myUi)
-NetworkInterface::NetworkInterface(QVBoxLayout *layout_base)
+//NetworkInterface::NetworkInterface(QVBoxLayout *layout_base)
+NetworkInterface::NetworkInterface(QVBoxLayout *layout_base, QMainWindow * mymainwindow,Ui::MainWindow * myUi)
 {
-    //ui = myUi;
+    ui = myUi;
     myServer = new QTcpServer();
 
     pushButton_connect = new QPushButton("Connect");
@@ -101,11 +101,11 @@ void NetworkInterface::inComingFromServer(){
             break;
         }
     }*/
-
+/*
     const char * myChar = "6:1\n";
     clientConnection->write(myChar);
     clientConnection->flush(); // this sends the actual data
-
+*/
 
 
     in.startTransaction();
@@ -167,8 +167,12 @@ void NetworkInterface::newConnection(){
 // ###################################################################
 void NetworkInterface::sendString(std::string myString){
     qDebug() << "Sending String: " << myString.c_str();
+    myString += "\n";
+    const char * myChar = myString.c_str();
+    clientConnection->write(myChar);
+    clientConnection->flush(); // this sends the actual data
 
-    //ui->statusBar->showMessage( myString.c_str());
+    ui->statusBar->showMessage( myString.c_str());
 }
 
 

@@ -73,7 +73,7 @@ ServiceDisplay::~ServiceDisplay()
 //void ServiceDisplay::addDataSend(std::string name, std::string comment, std::string number, std::string supportInReplay,QMainWindow * mymainwindow)
 void ServiceDisplay::addDataSend(std::string name, std::string comment, std::string number, std::string supportInReplay)
 {
-    SendIP* sendip = new SendIP(layout_vertical_Send, name, comment, number, supportInReplay, false);
+    //SendIP* sendip = new SendIP(layout_vertical_Send, name, comment, number, supportInReplay, false);
     //sendip->openWidget();
     //sendipList.push_back(sendip);
 
