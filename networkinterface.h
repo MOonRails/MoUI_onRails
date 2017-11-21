@@ -12,7 +12,7 @@
 #include <QtNetwork>
 #include <QTcpServer>
 #include <QTcpSocket>
-#include "ui_mainwindow.h"
+//#include "ui_mainwindow.h"
 
 class QLabel;
 class QPushButton;
@@ -26,7 +26,8 @@ class NetworkInterface : public QWidget
 {
     Q_OBJECT
 public:
-    NetworkInterface(QVBoxLayout *layout_base, QMainWindow * mymainwindow, Ui::MainWindow * myUi);
+    //NetworkInterface(QVBoxLayout *layout_base, QMainWindow * mymainwindow, Ui::MainWindow * myUi);
+    NetworkInterface(QVBoxLayout *layout_base);
     ~NetworkInterface();
 
     void sendString(std::string myString);
@@ -41,15 +42,16 @@ private:
 
 
 
-    QTcpSocket *mySocket;
+
     QTcpServer *myServer;
     QTcpSocket *clientConnection;
     QNetworkSession *networkSession;
+    QDataStream in;
 
     bool connectButtonStatus = false;
 
     QMainWindow* mainwindow;
-    Ui::MainWindow * ui;
+    //Ui::MainWindow * ui;
 
 private slots:
     void on_pushButton_connect_clicked();

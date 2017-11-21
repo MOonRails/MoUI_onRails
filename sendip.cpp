@@ -1,14 +1,15 @@
 #include "sendip.h"
-#include "networkinterface.h"
+
 #include "mainwindow.h"
 
 //! constructor
 // ###################################################################
-SendIP::SendIP(NetworkInterface* myNetworkInterface, QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay, QMainWindow * mymainwindow, bool dock)
+//SendIP::SendIP(NetworkInterface* myNetworkInterface, QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay, QMainWindow * mymainwindow, bool dock)
+SendIP::SendIP( QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay, bool dock)
 {
-    window = mymainwindow;
+    //window = mymainwindow;
     qDebug() << "SendIP number " << myNumber.c_str() << " supportInReplay " << mySupportInReplay.c_str();
-    networkInterface = myNetworkInterface;
+    //networkInterface = myNetworkInterface;
     name = myName;
     comment = myComment;
     number = myNumber;
@@ -73,7 +74,7 @@ void SendIP::sendData()
     ///
     std::string mySendString = number + std::string(":") + myLinedit->text().toStdString();
     //qDebug() << "sendipSend " << mySendString.c_str() << " number " << number.c_str();
-    networkInterface->sendString(mySendString);
+    //networkInterface->sendString(mySendString);
 
 }
 

@@ -1,12 +1,14 @@
 #include "publiship.h"
-#include "networkinterface.h"
+
 
 //! constructor
 // ###################################################################
-PublishIP::PublishIP(NetworkInterface* myNetworkInterface, QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay)
+//PublishIP::PublishIP(NetworkInterface* myNetworkInterface, QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay)
+PublishIP::PublishIP(QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay)
+
 {
     //qDebug()<< "addDataReception\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\n\n";
-    networkInterface = myNetworkInterface;
+    //networkInterface = myNetworkInterface;
 
 
     name = myName;

@@ -6,7 +6,8 @@
 #include <QTcpSocket>
 
 #include <QDataStream>
-#include "servicedisplay.h"
+//#include "servicedisplay.h"
+#include "service_display.h"
 #include "networkinterface.h"
 #include <vector>
 
@@ -31,7 +32,9 @@ private:
     void addService(std::__cxx11::string serviceName);
 
     //std::vector<QPushButton> mySendButtons;
-    //std::vector<ServiceDisplay*>myServiceDisplays;
+
+    std::vector<Service_Display*>myServiceDisplays;
+    //Service_Display* test;
 
     QPushButton* pushButton_file;
     /*QPushButton* pushButton_connect;
@@ -43,6 +46,8 @@ private:
     QTcpSocket* tcpSocket;
     int leftoverIncomingData_column = -1;
     std::string leftoverIncomingData = "";
+
+
 
     NetworkInterface* networkInterface;
 

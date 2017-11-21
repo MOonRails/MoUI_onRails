@@ -31,12 +31,14 @@ SOURCES += main.cpp\
     servicedisplay.cpp \
     sendip.cpp \
     publiship.cpp \
-    networkinterface.cpp
+    networkinterface.cpp \
+    service_display.cpp
 
 HEADERS  += mainwindow.h \
     servicedisplay.h \
     sendip.h \
     publiship.h \
-    networkinterface.h
+    networkinterface.h \
+    service_display.h
 
 FORMS    += mainwindow.ui

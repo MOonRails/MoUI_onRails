@@ -1,9 +1,10 @@
 #include "mainwindow.h"
-
 #include "ui_mainwindow.h"
-#include <QXmlSimpleReader>
-#include "networkinterface.h"
 
+//#include "servicedisplay.h"
+//#include "networkinterface.h"
+
+#include <QXmlSimpleReader>
 #include <QtWidgets>
 #include <QObject>
 #include <QDebug>
@@ -14,7 +15,7 @@
 
 #include <iostream>
 #include <fstream>
-#include "servicedisplay.h"
+
 
 
 //! constructor
@@ -39,8 +40,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
-    networkInterface = new NetworkInterface(ui->verticalLayout, this, ui);
-
+    networkInterface = new NetworkInterface(ui->verticalLayout);
+    //networkInterface = new NetworkInterface(ui->verticalLayout, this, ui);
 
 
     QObject::connect(treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(on_treeWidget_itemDoubleClicked(QTreeWidgetItem*,  int)));
@@ -174,6 +175,7 @@ void MainWindow::loadFile(std::string filename){
                 subTreeWidgetItem->setText(0,name.c_str());
                 myCurrentTreeWidgetItem->addChild(subTreeWidgetItem);
                 //myServiceDisplays.front()->addDataReception(networkInterface,name, comment,number,supportInReplay);
+                myServiceDisplays.front()->addDataReception(name, comment,number,supportInReplay);
             } else if(xmlReader->name() == "sendIP"){
                 std::string name,comment,number,supportInReplay = "";
                 foreach(const QXmlStreamAttribute &attr, xmlReader->attributes()) {
@@ -181,7 +183,6 @@ void MainWindow::loadFile(std::string filename){
                         QString attribute_value = attr.value().toString();
                         //qDebug() << "name " << attribute_value;
                         name = attribute_value.toStdString();
-
                     }
                     if (attr.name().toString() == QLatin1String("comment")) {
                         QString attribute_value = attr.value().toString();
@@ -204,6 +205,7 @@ void MainWindow::loadFile(std::string filename){
                 myCurrentTreeWidgetItem->addChild(subTreeWidgetItem);
                 qDebug() << "number " << number.c_str() << " supportInReplay " << supportInReplay.c_str();
                 //myServiceDisplays.front()->addDataSend(networkInterface,name, comment,number,supportInReplay,this);
+                myServiceDisplays.front()->addDataSend(name, comment,number,supportInReplay);
 
 
 
@@ -294,9 +296,9 @@ void MainWindow::addService(std::__cxx11::string serviceName){
   qDockWidget_service->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea );
   qDockWidget_service->setFloating(false);
   qDockWidget_service->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-  ServiceDisplay* myNewWindow = new ServiceDisplay(qDockWidget_service, this);
+  Service_Display* myNewWindow = new Service_Display(qDockWidget_service, this);
   //networkInterface->myServices.push_back(myNewWindow);
-  //myServiceDisplays.push_back(myNewWindow);
+  myServiceDisplays.push_back(myNewWindow);
 
   this->addDockWidget(Qt::RightDockWidgetArea, qDockWidget_service);
   //ui->centralWidget->setMinimumWidth(700);

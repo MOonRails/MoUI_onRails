@@ -1,5 +1,5 @@
 #include "networkinterface.h"
-#include "mainwindow.h"
+//#include "mainwindow.h"
 
 
 #include <QtNetwork>
@@ -10,9 +10,11 @@
 
 //! constructor
 // ###################################################################
-NetworkInterface::NetworkInterface(QVBoxLayout *layout_base, QMainWindow * mymainwindow,Ui::MainWindow * myUi)
+//NetworkInterface::NetworkInterface(QVBoxLayout *layout_base, QMainWindow * mymainwindow,Ui::MainWindow * myUi)
+NetworkInterface::NetworkInterface(QVBoxLayout *layout_base)
 {
-    ui = myUi;
+    //ui = myUi;
+    myServer = new QTcpServer();
 
     pushButton_connect = new QPushButton("Connect");
     pushButton_connect->setFixedWidth(75);
@@ -26,8 +28,6 @@ NetworkInterface::NetworkInterface(QVBoxLayout *layout_base, QMainWindow * mymai
     lineEdit_port = new QLineEdit();
     lineEdit_port->setText("5555");
     lineEdit_port->setFixedWidth(75);
-
-
 
 
 
@@ -91,6 +91,28 @@ void NetworkInterface::on_pushButton_connect_clicked(){
 void NetworkInterface::inComingFromServer(){
     qDebug() << "inComingFromServer\n";
     QObject::connect(   clientConnection,   SIGNAL(disconnected())  ,    this   ,    SLOT(disconnected())   );
+/*
+    int counter = 0;
+    while(broadcastData == false){
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
+        if(nextItem == true){
+            nextItem = false;
+            qDebug() << "next item\n";
+            break;
+        }
+    }*/
+
+    const char * myChar = "6:1\n";
+    clientConnection->write(myChar);
+    clientConnection->flush(); // this sends the actual data
+
+
+
+    in.startTransaction();
+
+    QString myReturnString;
+    in >> myReturnString;
+    qDebug() << myReturnString << "\n";
 
 }
 
@@ -146,7 +168,7 @@ void NetworkInterface::newConnection(){
 void NetworkInterface::sendString(std::string myString){
     qDebug() << "Sending String: " << myString.c_str();
 
-    ui->statusBar->showMessage( myString.c_str());
+    //ui->statusBar->showMessage( myString.c_str());
 }
 
 

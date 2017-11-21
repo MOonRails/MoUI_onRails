@@ -1,30 +1,20 @@
-#include "servicedisplay.h"
-//#include "publiship.h"
-//#include "sendip.h"
-
-
-#include <QtWidgets>
-#include <QObject>
-#include <QDebug>
-#include <QApplication>
-#include <QMessageBox>
-#include <QHeaderView>
-#include <QtCharts>
+#include "service_display.h"
 
 
 //! constructor
 // ###################################################################
-ServiceDisplay::ServiceDisplay()
+Service_Display::Service_Display()
 {
 
 }
 
 
+
 //! constructor
 // ###################################################################
-ServiceDisplay::ServiceDisplay(QDockWidget *dockWidget, QObject *myWindow)
+Service_Display::Service_Display(QDockWidget *dockWidget, QObject *myWindow)
 {
-    window = myWindow;
+    //window = myWindow;
     //Ui::MainWindow * myUi;
     //myUi->statusBar->showMessage(tr("Ready2"));
     //statusBar()->showMessage(tr("Ready2"));
@@ -38,22 +28,22 @@ ServiceDisplay::ServiceDisplay(QDockWidget *dockWidget, QObject *myWindow)
     line->setFrameShape(QFrame::VLine);
     line->setFrameShadow(QFrame::Sunken);
 
-    //QHBoxLayout *layout_horizontal_genericSend = new QHBoxLayout;
+    QHBoxLayout *layout_horizontal_genericSend = new QHBoxLayout;
 
-    /*myLineEdit = new QLineEdit;
+    myLineEdit = new QLineEdit;
     myLineEdit->setMaximumWidth(100);
     pushButton_send = new QPushButton("Send");
     pushButton_send->setMaximumWidth(100);
 
     layout_horizontal_genericSend->addWidget(myLineEdit);
     layout_horizontal_genericSend->addWidget(pushButton_send);
-*/
+
 
     layout_horizontal->addLayout(layout_vertical_Reception);
     layout_horizontal->addWidget(line);
     layout_horizontal->addLayout(layout_vertical_Send);
 
-    //layout_vertical->addLayout(layout_horizontal_genericSend);
+    layout_vertical->addLayout(layout_horizontal_genericSend);
     layout_vertical->addLayout(layout_horizontal);
     multiWidget->setLayout(layout_vertical);
 
@@ -63,15 +53,16 @@ ServiceDisplay::ServiceDisplay(QDockWidget *dockWidget, QObject *myWindow)
 
 //! destructor
 // ###################################################################
-ServiceDisplay::~ServiceDisplay()
+Service_Display::~Service_Display()
 {
 }
+
 
 
 //! add a data sending window
 // ###################################################################
 //void ServiceDisplay::addDataSend(std::string name, std::string comment, std::string number, std::string supportInReplay,QMainWindow * mymainwindow)
-void ServiceDisplay::addDataSend(std::string name, std::string comment, std::string number, std::string supportInReplay)
+void Service_Display::addDataSend(std::string name, std::string comment, std::string number, std::string supportInReplay)
 {
     SendIP* sendip = new SendIP(layout_vertical_Send, name, comment, number, supportInReplay, false);
     //sendip->openWidget();
@@ -81,9 +72,11 @@ void ServiceDisplay::addDataSend(std::string name, std::string comment, std::str
 
 }
 
+
+
 //! add a data display window
 // ###################################################################
-void ServiceDisplay::addDataReception(std::string name, std::string comment, std::string number, std::string supportInReplay)
+void Service_Display::addDataReception(std::string name, std::string comment, std::string number, std::string supportInReplay)
 {
     //qDebug()<< "addDataReception\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\n\n";
 
@@ -105,9 +98,9 @@ void ServiceDisplay::addDataReception(std::string name, std::string comment, std
 
 //!
 // ###################################################################
-void ServiceDisplay::findPublishList(std::string myNumber)
+void Service_Display::findPublishList(std::string myNumber)
 {
-    /*for (int i = 0; i < publishipList.size(); ++i) {
-        qDebug() <<  publishipList[i]->number.c_str();//"publish number " <<
-    }*/
+    //for (int i = 0; i < publishipList.size(); ++i) {
+    //    qDebug() <<  publishipList[i]->number.c_str();//"publish number " <<
+    //}
 }
