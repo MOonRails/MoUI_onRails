@@ -23,6 +23,8 @@ public:
     void openWidget();
     std::string number;
 
+
+
 private slots:
     void sendData();
 
@@ -33,6 +35,7 @@ private:
     //QVBoxLayout *layout_vertical;
     QMainWindow *window;
     std::string name,comment,supportInReplay,area,list,service,field = "";
+
 
     NetworkInterface* networkInterface;
 };

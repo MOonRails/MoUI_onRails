@@ -28,7 +28,7 @@ public:
     void addDataSend(std::string name, std::string comment, std::string number, std::string supportInReplay);
     void addDataReception(std::string name, std::string comment, std::string number, std::string supportInReplay);
     void findPublishList(std::string myNumber);
-
+    void addSpacer();
 private:
     //QObject *mainWindow; // contains the QObject from the main window
     QVBoxLayout *layout_vertical_Send;
@@ -39,10 +39,12 @@ private:
     //std::vector<QPushButton*> mySendButtons;
     //std::vector<QLabel*> myReceptionLabel;
     //std::vector<QChart*> myReceptionChart;
+    std::vector<SendIP*> mySendIP_list;
+    std::vector<PublishIP*> myPublishIP_list;
 
     QLineEdit * myLineEdit;
     QPushButton * pushButton_send;
-
+    bool dataReceptionFirst = true;
 
     //QObject *window;
 private slots:

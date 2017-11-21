@@ -7,6 +7,7 @@
 #include <QtWidgets>
 #include <QMainWindow>
 #include <QtCharts>
+#include <QMessageBox>
 
 
 class PublishIP : public QWidget
@@ -32,6 +33,8 @@ private:
     //NetworkInterface* networkInterface;
 
     std::string name,comment,supportInReplay,area,list,service,field = "";
+
+    QScrollArea* contentArea;
 
 
 };

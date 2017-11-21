@@ -28,14 +28,12 @@ QT += network
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    servicedisplay.cpp \
     sendip.cpp \
     publiship.cpp \
     networkinterface.cpp \
     service_display.cpp
 
 HEADERS  += mainwindow.h \
-    servicedisplay.h \
     sendip.h \
     publiship.h \
     networkinterface.h \

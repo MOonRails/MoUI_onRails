@@ -26,6 +26,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+
+
+
+
     statusBar()->showMessage(tr("Ready"));
 
     treeWidget = new QTreeWidget();
@@ -49,21 +53,25 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->verticalLayout->addWidget(treeWidget);
 
 
+    QApplication::setStyle(QStyleFactory::create("Dark"));
+    QPalette palette;
 
-
-
-    /*QDockWidget * dockWidget = new QDockWidget(tr("MoOnRails"), this);
-    dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea );
-    dockWidget->setFloating(false);
-    this->addDockWidget(Qt::RightDockWidgetArea, dockWidget);
-    QWidget* multiWidget = new QWidget();
-    QVBoxLayout *dockVerticalLayout = new QVBoxLayout;
-    QLabel *title = new QLabel("MoOnRails");
-    dockVerticalLayout->addWidget(title);
-    multiWidget->setLayout(dockVerticalLayout);
-    dockWidget->setWidget(multiWidget);*/
-
-
+    /*
+     *
+     * palette.setColor(QPalette::Window, QColor(53,53,53));
+    palette.setColor(QPalette::Button, QColor(53,53,53));
+    palette.setColor(QPalette::Highlight, QColor(142,45,197));
+    palette.setColor(QPalette::ButtonText, QColor(255,255,255));
+    palette.setColor(QPalette::Base, QColor(200,200,200));
+    palette.setColor(QPalette::WindowText, QColor(255,255,255));
+    */
+    palette.setColor(QPalette::Window, QColor(53,53,53));
+    palette.setColor(QPalette::Button, QColor(53,53,53));
+    palette.setColor(QPalette::Highlight, QColor(142,45,197));
+    palette.setColor(QPalette::ButtonText, QColor(0,0,0));
+    palette.setColor(QPalette::Base, QColor(200,200,200));
+    palette.setColor(QPalette::WindowText, QColor(255,255,255));
+    qApp->setPalette(palette);
 }
 
 
@@ -266,7 +274,8 @@ void MainWindow::loadFile(std::string filename){
             return;
     }
 
-
+    // end of parsing actions
+    myServiceDisplays.front()->addSpacer();
 
 }
 

@@ -27,6 +27,8 @@ PublishIP::PublishIP(QVBoxLayout *layout_base,std::string myName, std::string my
     pushButtonOpenClose->setMaximumWidth(50);
     QObject::connect(pushButtonOpenClose, SIGNAL(clicked()), this , SLOT(openCloseGraph())  );
 
+    QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Expanding,QSizePolicy::Minimum);
+
     // initialise graph
     //myReceptionChart.push_back(chart);
     chart->legend()->show();
@@ -43,15 +45,20 @@ PublishIP::PublishIP(QVBoxLayout *layout_base,std::string myName, std::string my
     chartView = new QChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing);
 
+    contentArea = new QScrollArea();
+    contentArea->setStyleSheet("QScrollArea {  border: none; }");
+    contentArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    contentArea->setContentsMargins(0,0,0,0);
+    contentArea->setMaximumHeight(0);
 
-
-
+    contentArea->setWidget(chartView);
 
     layout_horizontal->addWidget(myTitle);
     layout_horizontal->addWidget(data);
+    layout_horizontal->addSpacerItem(spacer);
     layout_horizontal->addWidget(pushButtonOpenClose);
     layout_vertical->addLayout(layout_horizontal);
-    layout_vertical->addWidget(chartView);
+    layout_vertical->addWidget(contentArea);
 
     layout_base->addLayout(layout_vertical);
 
@@ -91,17 +98,25 @@ void PublishIP::setValue(int myValue)
 // ###################################################################
 void PublishIP::openCloseGraph()
 {
-    if(open == true){
-        chart->setMaximumHeight(0);
 
-        //chart->setFixedHeight(0);
-        chart->setMaximumWidth(0);
+
+    QPropertyAnimation * toggleAnimation = new QPropertyAnimation(contentArea, "maximumHeight");
+    toggleAnimation->setDuration(300);
+
+
+    if(open == true){
+
+
+        toggleAnimation->setStartValue(0);
+        toggleAnimation->setEndValue(400);
+
         open = false;
     } else {
-        chart ->setMaximumHeight(16777215);
-        chart ->setMaximumWidth(16777215);
+
+        toggleAnimation->setStartValue(contentArea->height());
+        toggleAnimation->setEndValue(0);
         open = true;
     }
-    chart->setVisible(open);
+    toggleAnimation->start();
 }
 
