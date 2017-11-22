@@ -13,7 +13,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include "ui_mainwindow.h"
-//#include "service_display.h"
+#include "publiship.h"
 
 
 class QLabel;
@@ -29,13 +29,11 @@ class NetworkInterface : public QWidget
     Q_OBJECT
 public:
     NetworkInterface(QVBoxLayout *layout_base, QMainWindow * mymainwindow, Ui::MainWindow * myUi);
-    //NetworkInterface(QVBoxLayout *layout_base);
     ~NetworkInterface();
 
     void sendString(std::string myString);
     void findPusblishIp(std::string myNumber);
-    //std::vector<ServiceDisplay*> myServices;
-
+    void addPublishIP(PublishIP* myPublishIP);
 private:
 
     QPushButton* pushButton_connect;
@@ -43,9 +41,9 @@ private:
     QLineEdit* lineEdit_port;
 
 
+    std::vector<PublishIP*> myPublishIP_list;
 
-
-    QTcpServer *myServer;
+    //QTcpServer *myServer;
     QTcpSocket *clientConnection;
     QNetworkSession *networkSession;
     QDataStream in;
@@ -58,10 +56,11 @@ private:
 private slots:
     void on_pushButton_connect_clicked();
     void newConnection();
-    void disconnecting();//
-    void disconnected();//
-    void inComingFromServer();//
-    void connection();//
+    void disconnecting();
+    void disconnected();
+    void inComingFromServer();
+    void connection();
+    void readIncoming();
 
 };
 

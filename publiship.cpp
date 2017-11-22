@@ -13,9 +13,9 @@ PublishIP::PublishIP(QVBoxLayout *layout_base,std::string myName, std::string my
 
     name = myName;
     comment = myComment;
-    myNumber = myNumber;
-    mySupportInReplay = mySupportInReplay;
-    myName += ": ";
+    number = myNumber;
+    supportInReplay = mySupportInReplay;
+    myName = number + std::string(". ") + myName + std::string(": ");
     QLabel* myTitle = new QLabel(myName.c_str());
     data = new QLabel("#VALUE");
     chart = new QChart();

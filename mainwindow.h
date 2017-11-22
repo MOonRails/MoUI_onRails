@@ -51,6 +51,8 @@ private:
 
     NetworkInterface* networkInterface;
 
+    bool findDataType(std::string filename, std::string dataType,std::vector<std::string> *myTypeList,std::vector<std::string> *myNamesList);
+
 private slots:
 
     void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);

@@ -18,7 +18,7 @@ public:
     PublishIP(QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay);
     ~PublishIP();
     void setValue(int myValue);
-    std::string number;
+    std::string number,name;
 private slots:
     void openCloseGraph();
 
@@ -32,7 +32,7 @@ private:
 
     //NetworkInterface* networkInterface;
 
-    std::string name,comment,supportInReplay,area,list,service,field = "";
+    std::string comment,supportInReplay,area,list,service,field = "";
 
     QScrollArea* contentArea;
 

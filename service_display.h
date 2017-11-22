@@ -25,9 +25,9 @@ public:
     Service_Display(QDockWidget *dockWidget, QObject *myWindow,NetworkInterface* myNetworkInterface);
     ~Service_Display();
 
-    void addDataSend(std::string name, std::string comment, std::string number, std::string supportInReplay);
+    void addDataSend(std::string name, std::string comment, std::string number, std::string supportInReplay, std::string field, std::string type, std::vector<std::string> *myTypeList, std::vector<std::string> *myNamesList);
     void addDataReception(std::string name, std::string comment, std::string number, std::string supportInReplay);
-    void findPublishList(std::string myNumber);
+    int findPublishList(std::string myNumber);
     void addSpacer();
 private:
     //QObject *mainWindow; // contains the QObject from the main window

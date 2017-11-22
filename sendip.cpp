@@ -5,49 +5,84 @@
 //! constructor
 // ###################################################################
 //SendIP::SendIP(NetworkInterface* myNetworkInterface, QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay, QMainWindow * mymainwindow, bool dock)
-SendIP::SendIP( QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber, std::string mySupportInReplay,NetworkInterface* myNetworkInterface, bool dock)
+SendIP::SendIP( QVBoxLayout *layout_base,std::string myName, std::string myComment, std::string myNumber,
+                std::string mySupportInReplay,
+                NetworkInterface* myNetworkInterface,
+                std::string myField,
+                std::string myType,
+                std::vector<std::string>*myTypeList,
+                std::vector<std::string>*myNamesList, bool dock)
 {
     //window = mymainwindow;
-    qDebug() << "SendIP number " << myNumber.c_str() << " supportInReplay " << mySupportInReplay.c_str();
+    qDebug() << "SendIP number " << myNumber.c_str() << " myType " << myType.c_str();
     //networkInterface = myNetworkInterface;
     name = myName;
     comment = myComment;
     number = myNumber;
     supportInReplay = mySupportInReplay;
-    QLabel* myTitle = new QLabel(name.c_str());
-    myLinedit = new QLineEdit();
+    field = myField;
+    type = myType;
+
+    myName = number + std::string(". ") + myName + std::string(": ");
+
+    myTitle = new QLabel(myName.c_str());
+
+
+
+
 
     networkInterface=myNetworkInterface;
-    QPushButton* myPushButtonSend = new QPushButton("Send");
-    QObject::connect(myPushButtonSend, SIGNAL(clicked()), this , SLOT(sendData())  );
+    myPushButtonSend = new QPushButton("Send");
+    myPushButtonSend->setToolTip(myComment.c_str());
 
 
+    layout_horizontal = new QHBoxLayout;
+    layout_vertical = new QVBoxLayout;
 
+    if(type == "Boolean"){
+        myPushButtonTrue = new QPushButton("TRUE");
+        myPushButtonTrue->setDown(true);
+        myPushButtonFalse = new QPushButton("FALSE");
+        QObject::connect(myPushButtonTrue, SIGNAL(clicked()), this , SLOT(on_myPushButtonTrue_clicked())  );
+        QObject::connect(myPushButtonFalse, SIGNAL(clicked()), this , SLOT(on_myPushButtonFalse_clicked())  );
+        QObject::connect(myPushButtonSend, SIGNAL(clicked()), this , SLOT(sendDataStructure())  );
 
-    if(!dock){
-        QHBoxLayout *layout_horizontal = new QHBoxLayout;
-        QVBoxLayout *layout_vertical = new QVBoxLayout;
         layout_vertical->addWidget(myTitle);
-        layout_horizontal->addWidget(myLinedit);
+        layout_horizontal->addWidget(myPushButtonTrue);
+        layout_horizontal->addWidget(myPushButtonFalse);
         layout_horizontal->addWidget(myPushButtonSend);
         layout_vertical->addLayout(layout_horizontal);
+    } else if(type == "UOctet") {
+        // add horizontal slider here
+        defaultButtons();
+    } else if(myTypeList->size() != 0) {
+        layout_vertical->addWidget(myTitle);
+        for (int i = 0; i < myTypeList->size(); ++i) {
+            QLineEdit* myNewQlineEdit = new QLineEdit();
+            std::string tooltip;
+            tooltip += myNamesList->operator[](i);
+            tooltip += " : ";
+            tooltip += myTypeList->operator[](i);
+            myNewQlineEdit->setToolTip(tooltip.c_str());
+            myNewQlineEdit_list.push_back(myNewQlineEdit);
+            layout_horizontal->addWidget(myNewQlineEdit);
+        }
+        layout_horizontal->addWidget(myPushButtonSend);
+        QObject::connect(myPushButtonSend, SIGNAL(clicked()), this , SLOT(sendDataStructure())  );
+        layout_vertical->addLayout(layout_horizontal);
+    }  else {
+        defaultButtons();
+    }
 
+    if(!dock){
         layout_base->addLayout(layout_vertical);
     } else {
+        QWidget* multiWidget = new QWidget();
         QDockWidget * dockWidget = new QDockWidget(name.c_str(), window);
 
 
-        QHBoxLayout *layout_horizontal2 = new QHBoxLayout;
-        QVBoxLayout *layout_vertical2 = new QVBoxLayout;
-
-        //layout_vertical->addWidget(myTitle);
-        layout_horizontal2->addWidget(myLinedit);
-        layout_horizontal2->addWidget(myPushButtonSend);
-        layout_vertical2->addLayout(layout_horizontal2);
-        dockWidget->setLayout(layout_horizontal2);
-        //dockWidget->setWidget(myLinedit);
-        //dockWidget->setWidget(myPushButtonSend);
-
+        multiWidget->setLayout(layout_vertical);
+        dockWidget->setWidget(multiWidget);
         dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea );
         dockWidget->setFloating(true);
         window->addDockWidget(Qt::RightDockWidgetArea, dockWidget);
@@ -67,6 +102,18 @@ SendIP::~SendIP()
 }
 
 
+//! adds the default buttons to the interface
+// ###################################################################
+void SendIP::defaultButtons()
+{
+    myLinedit = new QLineEdit();
+    layout_vertical->addWidget(myTitle);
+    layout_horizontal->addWidget(myLinedit);
+    layout_horizontal->addWidget(myPushButtonSend);
+    layout_vertical->addLayout(layout_horizontal);
+    QObject::connect(myPushButtonSend, SIGNAL(clicked()), this , SLOT(sendData())  );
+}
+
 
 //! send data button pushed
 // ###################################################################
@@ -78,6 +125,82 @@ void SendIP::sendData()
     //qDebug() << "sendipSend " << mySendString.c_str() << " number " << number.c_str();
     networkInterface->sendString(mySendString);
 
+}
+
+//! send data button pushed
+// ###################################################################
+void SendIP::sendDataBool()
+{
+    ///qDebug()<< "sendData\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\";
+    ///
+    std::string mySendString;
+    if(buttonTrue == true){
+        mySendString = number + std::string(":1");
+    } else {
+        mySendString = number + std::string(":0");
+    }
+
+    //qDebug() << "sendipSend " << mySendString.c_str() << " number " << number.c_str();
+    networkInterface->sendString(mySendString);
+
+
+    if(buttonTrue == true){
+        myPushButtonTrue->setDown(true);
+        myPushButtonFalse->setDown(false);
+    } else {
+        myPushButtonTrue->setDown(false);
+        myPushButtonFalse->setDown(true);
+    }
+}
+
+
+//! send data button pushed
+// ###################################################################
+void SendIP::sendDataStructure()
+{
+    std::string mySendString = number + std::string(":");
+    bool first = true;
+    for (int i = 0; i < myNewQlineEdit_list.size(); ++i) {
+        if(first == false){
+            mySendString += ",";
+        } else {
+            first = false;
+        }
+        mySendString += myNewQlineEdit_list[i]->text().toStdString();
+    }
+    networkInterface->sendString(mySendString);
+
+}
+
+
+//! pushed the true button
+// ###################################################################
+void SendIP::on_myPushButtonTrue_clicked()
+{
+    if(buttonTrue == true){
+        return;
+    } else {
+        buttonTrue = true;
+        buttonFalse = false;
+        myPushButtonTrue->setDown(true);
+        myPushButtonFalse->setDown(false);
+    }
+}
+
+
+
+//! pushed the false button
+// ###################################################################
+void SendIP::on_myPushButtonFalse_clicked()
+{
+    if(buttonTrue == false){
+        return;
+    } else {
+        buttonTrue = false;
+        buttonFalse = true;
+        myPushButtonTrue->setDown(false);
+        myPushButtonFalse->setDown(true);
+    }
 }
 
 
