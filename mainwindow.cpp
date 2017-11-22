@@ -273,11 +273,11 @@ void MainWindow::loadFile(std::string filename){
                 std::vector<std::string>*myNamesList = new std::vector<std::string>;
                 if(typeName != "Boolean" && typeName != "Float" && typeName != "UOctet" ){
                     if(findDataType(filename,typeName,myTypeList,myNamesList)){
-                        qDebug() << "###############FoundValue " << typeName.c_str();
-                        qDebug() << "myTypeList " << myTypeList->size();
-                    } else {
-                        qDebug() << "###############not found " << typeName.c_str();
-                    }
+                        //qDebug() << "###############FoundValue " << typeName.c_str();
+                        //qDebug() << "myTypeList " << myTypeList->size();
+                    } //else {
+                        //qDebug() << "###############not found " << typeName.c_str();
+                    //}
 
                 }
                 //std::vector<std::string>*myTypeList2;

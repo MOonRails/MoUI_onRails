@@ -45,7 +45,7 @@ SendIP::SendIP( QVBoxLayout *layout_base,std::string myName, std::string myComme
         myPushButtonFalse = new QPushButton("FALSE");
         QObject::connect(myPushButtonTrue, SIGNAL(clicked()), this , SLOT(on_myPushButtonTrue_clicked())  );
         QObject::connect(myPushButtonFalse, SIGNAL(clicked()), this , SLOT(on_myPushButtonFalse_clicked())  );
-        QObject::connect(myPushButtonSend, SIGNAL(clicked()), this , SLOT(sendDataStructure())  );
+        QObject::connect(myPushButtonSend, SIGNAL(clicked()), this , SLOT(sendDataBool())  );
 
         layout_vertical->addWidget(myTitle);
         layout_horizontal->addWidget(myPushButtonTrue);
@@ -135,12 +135,15 @@ void SendIP::sendDataBool()
     ///
     std::string mySendString;
     if(buttonTrue == true){
-        mySendString = number + std::string(":1");
+        mySendString = number;
+        mySendString += ":1";
     } else {
-        mySendString = number + std::string(":0");
+        mySendString = number;
+        mySendString += ":0";
+
     }
 
-    //qDebug() << "sendipSend " << mySendString.c_str() << " number " << number.c_str();
+    qDebug() << "sendipSend " << mySendString.c_str() << " value " << mySendString.c_str();
     networkInterface->sendString(mySendString);
 
 

@@ -20,9 +20,8 @@ NetworkInterface::NetworkInterface(QVBoxLayout *layout_base, QMainWindow * mymai
     //pushButton_connect->setFixedWidth(50);
     pushButton_connect->setMaximumWidth(70);
 
-    clientConnection = new QTcpSocket();
-    in.setDevice(clientConnection);
-    in.setVersion(QDataStream::Qt_4_0);
+
+
 
     QObject::connect(pushButton_connect, SIGNAL(clicked()), this , SLOT(on_pushButton_connect_clicked())  );
     lineEdit_ip = new QLineEdit();
@@ -68,24 +67,33 @@ NetworkInterface::~NetworkInterface()
 void NetworkInterface::on_pushButton_connect_clicked(){
     qDebug() << "on_pushButton_connect_clicked\n";
 
+
+
     if(connectButtonStatus == true){
         //qDebug() << "disconnecting button\n";
         disconnecting();
         return;
     }
 
+    clientConnection = new QTcpSocket();
+    in.setDevice(clientConnection);
+    in.setVersion(QDataStream::Qt_4_0);
+
+    /*QSettings settings(QSettings::UserScope, QLatin1String("MOoUI_onRails"));
+    settings.beginGroup(QLatin1String("QtNetwork"));
+    const QString id = settings.value(QLatin1String("DefaultNetworkConfiguration")).toString();
+    settings.endGroup();
+    preferences->connectToIP = ipAddress.toStdString();
+    preferences->connectToPort = portNumber;*/
+
+
+
     pushButton_connect->setText("Disconnect");
     connectButtonStatus = true;
 
-    //myListenButton->setDisabled(true);
-    //myConnectButton->setText("Disconnect");
-    //myConnectButton->setIcon(QIcon(":/icons/disconnect2.png"));
 
-
-    //myStatusLabel->setText("<font color='orange'>Connecting</font>");
-    //connectButtonStatus = false;
-    //myIP_Edit->setDisabled(true);
-    //myPortEdit->setDisabled(true);
+    lineEdit_ip->setDisabled(true);
+    lineEdit_port->setDisabled(true);
 
 
 
@@ -129,14 +137,59 @@ void NetworkInterface::inComingFromServer(){
 // ###################################################################
 void NetworkInterface::readIncoming(){
     qDebug() << "readIncoming: ";
+
+
+
+    /*while (clientConnection->bytesAvailable())
+        {
+            buffer.append(clientConnection->readAll());
+            int packetSize = getPacketSize(buffer);
+            while(packetSize>0)
+            {
+                handlePacket(buffer.left(packetSize);
+                buffer.remove(0,packetSize);
+                packetSize = getPacketSize(buffer);
+            }
+        }*/
+
     in.startTransaction();
 
-    QString incomingString;
+    while (clientConnection->bytesAvailable()){
+        if(connectButtonStatus == false){
+            return;
+        }
+        QString str;
+        qint32 a;
+        in >> str >> a; // try to read packet atomically
+
+        if (!in.commitTransaction())
+            qDebug() << "waiting";
+            //return;     // wait for more data
+        else {
+            qDebug() << "reading " << str;
+        }
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
+    }
+
+/*
+    in.startTransaction();
+
+        QString data;
+        in >> data;
+
+        if (!in.commitTransaction())
+        {
+            qDebug() << "incomplete: " << data;
+            // readyRead will be called again when there is more data
+            return;
+        }
+        qDebug() << "printingNetworkData " << data;*/
+    /*QString incomingString;
     in >> incomingString;
 
     if (!in.commitTransaction())
         qDebug() << "!in.commitTransaction " << incomingString;
-        return;
+        return;*/
 
     /*if (incomingString == currentFortune) {
         QTimer::singleShot(0, this, &Client::requestNewFortune);
@@ -145,14 +198,14 @@ void NetworkInterface::readIncoming(){
 
 
 
-    qDebug() << "incoming " << incomingString;
+    //qDebug() << "incoming " << incomingString;
     //statusLabel->setText(currentFortune);
     //getFortuneButton->setEnabled(true);
 
-    in.startTransaction();
-    QString myReturnString;
-    in >> myReturnString;
-    qDebug() <<"test2" << myReturnString << "\n";
+    //in.startTransaction();
+    //QString myReturnString;
+    //in >> myReturnString;
+    //qDebug() <<"test2" << myReturnString << "\n";
 }
 
 //! Connected
@@ -166,9 +219,10 @@ void NetworkInterface::connection(){
 // ###################################################################
 void NetworkInterface::disconnecting(){
     clientConnection->close();
-    //myServer->close();
-    //myConnectButton->setDisabled(false);
-    //myListenButton->setDisabled(false);
+
+
+    lineEdit_ip->setDisabled(false);
+    lineEdit_port->setDisabled(false);
 
     //myConnectButton->setText("Connect");
     //myConnectButton->setIcon(QIcon(":/icons/connect2.png"));
@@ -226,10 +280,10 @@ void NetworkInterface::sendString(std::string myString){
 //! send a string to the server
 // ###################################################################
 void NetworkInterface::findPusblishIp(std::string myNumber){
-    qDebug() << "findPusblishIp: " << myNumber.c_str();
+    //qDebug() << "findPusblishIp: " << myNumber.c_str();
     for (int i = 0; i < myPublishIP_list.size(); ++i) {
         if(myPublishIP_list[i]->number == myNumber){
-            qDebug() << "found " << myPublishIP_list[i]->name.c_str();
+            //qDebug() << "found " << myPublishIP_list[i]->name.c_str();
             //myPublishIP_list[i]->setValue(21);
         }
     }
@@ -243,6 +297,13 @@ void NetworkInterface::findPusblishIp(std::string myNumber){
 void NetworkInterface::addPublishIP(PublishIP* myPublishIP){
     myPublishIP_list.push_back(myPublishIP);
 }
+
+/*
+//! adding a publish ip object to the myPublishIP_list
+// ###################################################################
+void NetworkInterface::addSendIP(SendIP* mySendIP){
+    myPublishIP_list.push_back(myPublishIP);
+}*/
 
 
 

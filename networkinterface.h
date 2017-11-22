@@ -39,7 +39,8 @@ private:
     QPushButton* pushButton_connect;
     QLineEdit* lineEdit_ip;
     QLineEdit* lineEdit_port;
-
+    QByteArray buffer;
+    QString buffer2;
 
     std::vector<PublishIP*> myPublishIP_list;
 

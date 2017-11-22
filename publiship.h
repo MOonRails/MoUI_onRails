@@ -36,6 +36,8 @@ private:
 
     QScrollArea* contentArea;
 
+    //NetworkInterface* networkInterface;
+
 
 };
 
