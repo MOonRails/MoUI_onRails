@@ -29,7 +29,10 @@ private:
     QChartView * chartView;
     int chartCounter = 0;
     bool open = true;
-
+    int min = 0;
+    int max = 1000;
+    QValueAxis *axisY;
+    QValueAxis *axisX;
     //NetworkInterface* networkInterface;
 
     std::string comment,supportInReplay,area,list,service,field = "";

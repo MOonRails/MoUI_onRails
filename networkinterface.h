@@ -14,7 +14,7 @@
 #include <QTcpSocket>
 #include "ui_mainwindow.h"
 #include "publiship.h"
-
+#include <QByteArray>
 
 class QLabel;
 class QPushButton;
@@ -32,7 +32,7 @@ public:
     ~NetworkInterface();
 
     void sendString(std::string myString);
-    void findPusblishIp(std::string myNumber);
+    void pusblishIp_String(std::string myNumber,std::string myText);
     void addPublishIP(PublishIP* myPublishIP);
 private:
 
@@ -54,6 +54,8 @@ private:
     QMainWindow* mainwindow;
     Ui::MainWindow * ui;
 
+    int leftoverIncomingData_column = -1;
+    std::string leftoverIncomingData = "";
 private slots:
     void on_pushButton_connect_clicked();
     void newConnection();
@@ -63,6 +65,11 @@ private slots:
     void connection();
     void readIncoming();
 
+
+    void displayConnectionError(QAbstractSocket::SocketError socketError);
+    void sessionOpened();
+    //void myServerNewConnection();
+    void listeningToIncomingData();
 };
 
 #endif // NETWORKINTERFACE_H

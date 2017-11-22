@@ -43,10 +43,7 @@ NetworkInterface::NetworkInterface(QVBoxLayout *layout_base, QMainWindow * mymai
 
 
 
-/*
-    layout_base->addWidget(lineEdit_ip);
-    layout_base->addWidget(lineEdit_port);
-    layout_base->addWidget(pushButton_connect);*/
+
 }
 
 
@@ -74,22 +71,40 @@ void NetworkInterface::on_pushButton_connect_clicked(){
         disconnecting();
         return;
     }
+    pushButton_connect->setText("Disconnect");
+    connectButtonStatus = true;
+
+
 
     clientConnection = new QTcpSocket();
     in.setDevice(clientConnection);
     in.setVersion(QDataStream::Qt_4_0);
 
-    /*QSettings settings(QSettings::UserScope, QLatin1String("MOoUI_onRails"));
+    QSettings settings(QSettings::UserScope, QLatin1String("MOoUI_onRails"));
     settings.beginGroup(QLatin1String("QtNetwork"));
     const QString id = settings.value(QLatin1String("DefaultNetworkConfiguration")).toString();
     settings.endGroup();
-    preferences->connectToIP = ipAddress.toStdString();
-    preferences->connectToPort = portNumber;*/
+    //preferences->connectToIP = lineEdit_ip->text().toStdString();
+    //preferences->connectToPort = lineEdit_port->text().toInt();
+    QNetworkConfigurationManager manager;
+    manager.capabilities();
+
+    QNetworkConfiguration config = manager.configurationFromIdentifier(id);
+    if ((config.state() & QNetworkConfiguration::Discovered) !=
+            QNetworkConfiguration::Discovered) {
+        config = manager.defaultConfiguration();
+    }
+    networkSession = new QNetworkSession(config, this);
+    connect(networkSession, &QNetworkSession::opened,this, sessionOpened);
+    connect(clientConnection, &QIODevice::readyRead,this, listeningToIncomingData);
+    typedef void (QAbstractSocket::*QAbstractSocketErrorSignal)(QAbstractSocket::SocketError);
+
+    connect(clientConnection, static_cast<QAbstractSocketErrorSignal>(&QAbstractSocket::error),this, displayConnectionError);
+
+    networkSession->open();
 
 
 
-    pushButton_connect->setText("Disconnect");
-    connectButtonStatus = true;
 
 
     lineEdit_ip->setDisabled(true);
@@ -105,6 +120,137 @@ void NetworkInterface::on_pushButton_connect_clicked(){
 
 }
 
+//! displayConnectionError
+// ###################################################################
+void NetworkInterface::displayConnectionError(QAbstractSocket::SocketError socketError)
+{
+    switch (socketError) {
+    case QAbstractSocket::RemoteHostClosedError:
+        break;
+    case QAbstractSocket::HostNotFoundError:
+        qDebug() << "The host was not found. Please check the host name and port settings.";
+        QMessageBox::information(this, tr("Gepetto Client"),
+                                 tr("The host was not found. Please check the "
+                                    "host name and port settings."));
+        break;
+    case QAbstractSocket::ConnectionRefusedError:
+        qDebug() << "The connection was refused by the peer. Make sure the server is running";
+        QMessageBox::information(this, tr("Gepetto Client"),
+                                 tr("The connection was refused by the peer. "
+                                    "Make sure the server is running, and"
+                                    "check that the host name and port "
+                                    "settings are correct."));
+        break;
+    default:
+        qDebug() << "The following error occurred: %1.";
+        QMessageBox::information(this, tr("Gepetto Client"),
+                                 tr("The following error occurred: %1.")
+                                 .arg(clientConnection->errorString()));
+    }
+
+    //getFortuneButton->setEnabled(true);
+}
+
+
+//! open session   - used by listening part
+// ###################################################################
+void NetworkInterface::sessionOpened()
+{
+    qDebug() << "sessionOpened\n";
+
+
+    // Save the used configuration
+    QNetworkConfiguration config = networkSession->configuration();
+    QString id;
+    if (config.type() == QNetworkConfiguration::UserChoice)
+        id = networkSession->sessionProperty(QLatin1String("UserChoiceConfiguration")).toString();
+    else
+        id = config.identifier();
+
+    QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
+    settings.beginGroup(QLatin1String("QtNetwork"));
+    settings.setValue(QLatin1String("DefaultNetworkConfiguration"), id);
+    settings.endGroup();
+
+
+
+}
+
+
+
+
+
+//! listening to incoming data
+// ###################################################################
+void NetworkInterface::listeningToIncomingData()
+{
+    qDebug() << "\nlisteningToIncomingData: receiving data\n";
+    in.startTransaction();
+
+
+
+
+
+    quint8 nextByte;
+    std::string retrievedString = "";
+    std::string binaryString = "";
+
+    int startingCol = 0;
+    if(leftoverIncomingData_column != -1){
+        //qDebug() << "using leftover data " << leftoverIncomingData.length();
+        binaryString = leftoverIncomingData;
+        startingCol = leftoverIncomingData_column;
+        leftoverIncomingData = "";
+    }
+
+
+    // loop until all data is reveived
+    while ( !in.atEnd() ) {
+        QString myQString2;
+        in >> nextByte;
+        //qDebug() << "nextByte" << nextByte << "\n";
+        QString myQString;
+        myQString.append( tr("%1").arg(nextByte,2,16).replace(" ", "0") );
+        retrievedString += myQString.toStdString();
+
+
+    }
+
+
+    // check if the retrieved data is empty
+    if(retrievedString.length() == 0){
+        qDebug() << "ERROR: empty frame\n";
+        return;
+    }
+
+
+
+
+
+    QByteArray text = QByteArray::fromHex(retrievedString.c_str());
+    text = text.trimmed();
+    qDebug() << "retrievedString " << text;
+    QString Qtext = text;
+    if(Qtext == ""){
+        return;
+    }
+    QStringList pieces = Qtext.split( ":" );
+
+
+    if(pieces[0] == "STR"){
+        return;
+    }
+
+    pusblishIp_String(pieces[0].toStdString(),pieces[1].toStdString()   );
+
+
+
+
+
+
+
+}
+
 
 
 //! connecting to an existing server
@@ -113,22 +259,7 @@ void NetworkInterface::inComingFromServer(){
     qDebug() << "inComingFromServer\n";
     QObject::connect(   clientConnection,   SIGNAL(disconnected())  ,    this   ,    SLOT(disconnected())   );
     QObject::connect(   clientConnection,   &QIODevice::readyRead   ,    this   , readIncoming);
-/*
 
-    const char * myChar = "6:1\n";
-    clientConnection->write(myChar);
-    clientConnection->flush(); // this sends the actual data
-*/
-   /* int counter = 0;
-    while(connectButtonStatus == true){
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
-
-    }*/
-/*
-    in.startTransaction();
-    QString myReturnString;
-    in >> myReturnString;
-    qDebug() << myReturnString << "\n";*/
 
 }
 
@@ -140,17 +271,7 @@ void NetworkInterface::readIncoming(){
 
 
 
-    /*while (clientConnection->bytesAvailable())
-        {
-            buffer.append(clientConnection->readAll());
-            int packetSize = getPacketSize(buffer);
-            while(packetSize>0)
-            {
-                handlePacket(buffer.left(packetSize);
-                buffer.remove(0,packetSize);
-                packetSize = getPacketSize(buffer);
-            }
-        }*/
+
 
     in.startTransaction();
 
@@ -171,41 +292,7 @@ void NetworkInterface::readIncoming(){
         QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
     }
 
-/*
-    in.startTransaction();
 
-        QString data;
-        in >> data;
-
-        if (!in.commitTransaction())
-        {
-            qDebug() << "incomplete: " << data;
-            // readyRead will be called again when there is more data
-            return;
-        }
-        qDebug() << "printingNetworkData " << data;*/
-    /*QString incomingString;
-    in >> incomingString;
-
-    if (!in.commitTransaction())
-        qDebug() << "!in.commitTransaction " << incomingString;
-        return;*/
-
-    /*if (incomingString == currentFortune) {
-        QTimer::singleShot(0, this, &Client::requestNewFortune);
-        return;
-    }*/
-
-
-
-    //qDebug() << "incoming " << incomingString;
-    //statusLabel->setText(currentFortune);
-    //getFortuneButton->setEnabled(true);
-
-    //in.startTransaction();
-    //QString myReturnString;
-    //in >> myReturnString;
-    //qDebug() <<"test2" << myReturnString << "\n";
 }
 
 //! Connected
@@ -279,12 +366,16 @@ void NetworkInterface::sendString(std::string myString){
 
 //! send a string to the server
 // ###################################################################
-void NetworkInterface::findPusblishIp(std::string myNumber){
-    //qDebug() << "findPusblishIp: " << myNumber.c_str();
+void NetworkInterface::pusblishIp_String(std::string myNumber,std::string myText){
+    qDebug() << "myNumber: " << myNumber.c_str() << "myText: " << myText.c_str();
+
+    QString myQText = myText.c_str();
+    qDebug() << "myNumber: " << myQText.toFloat();
     for (int i = 0; i < myPublishIP_list.size(); ++i) {
         if(myPublishIP_list[i]->number == myNumber){
             //qDebug() << "found " << myPublishIP_list[i]->name.c_str();
             //myPublishIP_list[i]->setValue(21);
+            myPublishIP_list[i]->setValue(myQText.toFloat());
         }
     }
 
@@ -298,12 +389,6 @@ void NetworkInterface::addPublishIP(PublishIP* myPublishIP){
     myPublishIP_list.push_back(myPublishIP);
 }
 
-/*
-//! adding a publish ip object to the myPublishIP_list
-// ###################################################################
-void NetworkInterface::addSendIP(SendIP* mySendIP){
-    myPublishIP_list.push_back(myPublishIP);
-}*/
 
 
 

@@ -33,7 +33,9 @@ PublishIP::PublishIP(QVBoxLayout *layout_base,std::string myName, std::string my
     //myReceptionChart.push_back(chart);
     chart->legend()->show();
     chart->createDefaultAxes();
-    chart->setTitle(myName.c_str());
+    //chart->setTitle(myName.c_str());
+    chart->createDefaultAxes();
+
 
 
 
@@ -41,9 +43,17 @@ PublishIP::PublishIP(QVBoxLayout *layout_base,std::string myName, std::string my
     series = new QLineSeries();
     series->setName(myName.c_str());
     chart->addSeries(series);
+    chart->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     chartView = new QChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing);
+    chartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    axisX = new QValueAxis;
+    axisX->setRange(10, 20);
+    axisX->setTickCount(10);
+    axisX->setLabelFormat("%.2f");
+    chartView->chart()->setAxisX(axisX, series);
 
     contentArea = new QScrollArea();
     contentArea->setStyleSheet("QScrollArea {  border: none; }");
@@ -81,7 +91,19 @@ PublishIP::~PublishIP()
 // ###################################################################
 void PublishIP::setValue(int myValue)
 {
+    if(myValue < min){
+        min = myValue;
+    }
+    if(myValue > max){
+        max = myValue;
+    }
+
     chart->removeSeries(series);
+
+    if(chartCounter > 100){
+        series->remove(0);
+    }
+
     series->append(QPointF(chartCounter,myValue));
     data->setText(QString::number(myValue));
 
@@ -89,6 +111,10 @@ void PublishIP::setValue(int myValue)
     //chart->axisY()->setRange(*minp,*maxp);
     //chart->update();
     chart->addSeries(series);
+    /*axisX->setRange(min, max);
+    axisX->setTickCount(10);
+    axisX->setLabelFormat("%.2f");
+    chartView->chart()->setAxisX(axisX, series);*/
 
     chartCounter++;
 }

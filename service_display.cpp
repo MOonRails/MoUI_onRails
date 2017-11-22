@@ -131,14 +131,14 @@ void Service_Display::addDataReception(std::string name, std::string comment, st
     myPublishIP_list.push_back(myPublish);
     networkInterface->addPublishIP(myPublish);
 
-    myPublish->setValue(1);
+    /*myPublish->setValue(1);
     myPublish->setValue(2);
     myPublish->setValue(11);
     myPublish->setValue(3);
     myPublish->setValue(4);
     myPublish->setValue(15);
     myPublish->setValue(7);
-    myPublish->setValue(8);
+    myPublish->setValue(8);*/
 }
 
 
