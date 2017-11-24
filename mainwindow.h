@@ -28,8 +28,8 @@ private:
 
     QTreeWidget *treeWidget;
     QDockWidget *startDockWidget;
-    void loadFile(std::__cxx11::string filename);
-    void addService(std::__cxx11::string serviceName);
+    void loadFile(std::string filename);
+    void addService(std::string serviceName);
 
     //std::vector<QPushButton> mySendButtons;
 

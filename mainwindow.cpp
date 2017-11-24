@@ -327,7 +327,7 @@ void MainWindow::on_pushButton_file_clicked()
 
 //! launch of a service window window
 // ########################################################
-void MainWindow::addService(std::__cxx11::string serviceName){
+void MainWindow::addService(std::string serviceName){
   QDockWidget * qDockWidget_service = new QDockWidget(serviceName.c_str(), this);
   qDockWidget_service->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea );
   qDockWidget_service->setFloating(false);

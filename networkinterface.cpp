@@ -95,11 +95,11 @@ void NetworkInterface::on_pushButton_connect_clicked(){
         config = manager.defaultConfiguration();
     }
     networkSession = new QNetworkSession(config, this);
-    connect(networkSession, &QNetworkSession::opened,this, sessionOpened);
-    connect(clientConnection, &QIODevice::readyRead,this, listeningToIncomingData);
+    QObject::connect(networkSession, &QNetworkSession::opened,this, &NetworkInterface::sessionOpened);
+    QObject::connect(clientConnection, &QIODevice::readyRead,this, &NetworkInterface::listeningToIncomingData);
     typedef void (QAbstractSocket::*QAbstractSocketErrorSignal)(QAbstractSocket::SocketError);
 
-    connect(clientConnection, static_cast<QAbstractSocketErrorSignal>(&QAbstractSocket::error),this, displayConnectionError);
+    QObject::connect(clientConnection, static_cast<QAbstractSocketErrorSignal>(&QAbstractSocket::error),this, &NetworkInterface::displayConnectionError );
 
     networkSession->open();
 
@@ -116,7 +116,7 @@ void NetworkInterface::on_pushButton_connect_clicked(){
     clientConnection->connectToHost(QHostAddress(lineEdit_ip->text()), lineEdit_port->text().toInt());
     qDebug() << "on_pushButton_connect_clicked2\n";
 
-    QObject::connect(   clientConnection,   SIGNAL(connected())  ,    this   ,    SLOT(inComingFromServer())   );
+    QObject::connect(   clientConnection,   &QAbstractSocket::connected  ,    this   ,    &NetworkInterface::inComingFromServer   );
 
 }
 
@@ -257,8 +257,8 @@ void NetworkInterface::listeningToIncomingData()
 // ###################################################################
 void NetworkInterface::inComingFromServer(){
     qDebug() << "inComingFromServer\n";
-    QObject::connect(   clientConnection,   SIGNAL(disconnected())  ,    this   ,    SLOT(disconnected())   );
-    QObject::connect(   clientConnection,   &QIODevice::readyRead   ,    this   , readIncoming);
+    QObject::connect(   clientConnection,   &QAbstractSocket::disconnected ,    this   ,    &NetworkInterface::disconnected   );
+    QObject::connect(   clientConnection,   &QIODevice::readyRead   ,    this   , &NetworkInterface::readIncoming );
 
 
 }
