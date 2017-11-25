@@ -6,15 +6,18 @@
 Service_Display::Service_Display()
 {
 
+
+
 }
 
 
 
 //! constructor
 // ###################################################################
-Service_Display::Service_Display(QDockWidget *dockWidget, QObject *myWindow, NetworkInterface *myNetworkInterface)
+Service_Display::Service_Display(QDockWidget *myDockWidget, QObject *myWindow, NetworkInterface *myNetworkInterface)
 {
     networkInterface=myNetworkInterface;
+    dockWidget = myDockWidget;
     //window = myWindow;
     //Ui::MainWindow * myUi;
     //myUi->statusBar->showMessage(tr("Ready2"));
@@ -83,6 +86,7 @@ Service_Display::Service_Display(QDockWidget *dockWidget, QObject *myWindow, Net
 // ###################################################################
 Service_Display::~Service_Display()
 {
+     delete dockWidget;
 }
 
 

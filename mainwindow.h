@@ -5,8 +5,11 @@
 #include <QtWidgets>
 #include <QTcpSocket>
 
+#include <QFileSystemWatcher>
 #include <QDataStream>
-//#include "servicedisplay.h"
+#include <QMessageBox>
+#include <QDateTime>
+
 #include "service_display.h"
 #include "networkinterface.h"
 #include <vector>
@@ -27,25 +30,23 @@ private:
     Ui::MainWindow *ui;
 
     QTreeWidget *treeWidget;
-    QDockWidget *startDockWidget;
+    //QDockWidget *startDockWidget;
     void loadFile(std::string filename);
     void addService(std::string serviceName);
 
-    //std::vector<QPushButton> mySendButtons;
 
     std::vector<Service_Display*>myServiceDisplays;
-    //Service_Display* test;
 
     QPushButton* pushButton_file;
-    /*QPushButton* pushButton_connect;
-    QLineEdit* lineEdit_ip;
-    QLineEdit* lineEdit_port;*/
 
-    QTcpSocket *clientConnection;
-    QDataStream *in;
-    QTcpSocket* tcpSocket;
+
+    QDateTime lastRead;
+
+
     int leftoverIncomingData_column = -1;
     std::string leftoverIncomingData = "";
+
+    QFileSystemWatcher* watcher;
 
 
 
@@ -57,10 +58,9 @@ private slots:
 
     void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
 
-    void inComingFromServer();
     void on_pushButton_file_clicked();
-    void on_pushButton_connect_clicked();
-    void disconnected();
+
+    void on_fileChanged(QString myFile);
 };
 
 #endif // MAINWINDOW_H

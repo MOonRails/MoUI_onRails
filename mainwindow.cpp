@@ -1,8 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-//#include "servicedisplay.h"
-//#include "networkinterface.h"
+
 
 #include <QXmlSimpleReader>
 #include <QtWidgets>
@@ -29,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
+    lastRead = QDateTime::currentDateTime();
 
     statusBar()->showMessage(tr("Ready"));
 
@@ -85,11 +85,7 @@ void MainWindow::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int colu
     QTreeWidgetItem *myCurrentTreeWidgetItem = item->parent();
     qDebug() << "clicked: " << column << " parent2: " << myCurrentTreeWidgetItem->text(0);
 
-/*
-    QDockWidget * dockWidget = new QDockWidget(myTitle, this);
-    dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea );
-    dockWidget->setFloating(true);
-    this->addDockWidget(Qt::RightDockWidgetArea, dockWidget);*/
+
 
 }
 
@@ -98,6 +94,10 @@ void MainWindow::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int colu
 // ###################################################################
 void MainWindow::loadFile(std::string filename){
     qDebug("function: loadFile\n");
+
+
+
+
     QFile* xmlFile = new QFile(filename.c_str());
     if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
         QMessageBox::critical(this,"Load XML File Problem",
@@ -105,6 +105,22 @@ void MainWindow::loadFile(std::string filename){
                               QMessageBox::Ok);
         return;
     }
+
+
+
+
+    for (int i = 0; i < myServiceDisplays.size(); ++i) {
+        delete myServiceDisplays[i];
+        treeWidget->clear();
+    }
+
+
+    watcher = new QFileSystemWatcher(this);
+    watcher->addPath(filename.c_str());
+    QObject::connect(watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(on_fileChanged(const QString &)));
+
+
+
     QXmlStreamReader* xmlReader = new QXmlStreamReader(xmlFile);
 
     bool areaFound = false;
@@ -298,7 +314,7 @@ void MainWindow::loadFile(std::string filename){
     }
 
     // end of parsing actions
-    myServiceDisplays.front()->addSpacer();
+    myServiceDisplays.back()->addSpacer();
     treeWidget->expandAll();
     //QTreeWidgetItem* header = treeWidget->headerItem();
     //header->setText(0, "My Text");
@@ -337,114 +353,10 @@ void MainWindow::addService(std::string serviceName){
   myServiceDisplays.push_back(myNewWindow);
 
   this->addDockWidget(Qt::RightDockWidgetArea, qDockWidget_service);
-  //ui->centralWidget->setMinimumWidth(700);
-  //ui->MainWindow->setMinimumWidth(700);
   }
 
 
 
-
-//! connecting to an existing server
-// ###################################################################
-void MainWindow::on_pushButton_connect_clicked(){
-    qDebug() << "on_pushButton_connect_clicked\n";
-
-/*
-    if(connectButtonStatus == false){
-        disconnecting();
-        return;
-    }
-
-
-    myListenButton->setDisabled(true);
-    myConnectButton->setText("Disconnect");
-    myConnectButton->setIcon(QIcon(":/icons/disconnect2.png"));
-    myStatusLabel->setText("<font color='orange'>Connecting</font>");
-    connectButtonStatus = false;
-    myIP_Edit->setDisabled(true);
-    myPortEdit->setDisabled(true);
-*/
-/*    clientConnection = new QTcpSocket();
-
-    in = new QDataStream();
-    tcpSocket = new QTcpSocket(this);
-    in->setDevice(tcpSocket);
-    in->setVersion(QDataStream::Qt_4_0);
-
-
-    clientConnection->connectToHost(QHostAddress(lineEdit_ip->text()), lineEdit_port->text().toInt());
-
-    QObject::connect(   clientConnection,   SIGNAL(connected())  ,    this   ,    SLOT(inComingFromServer())   );
-
-*/
-}
-
-
-
-void MainWindow::inComingFromServer(){
-    qDebug() << "inComingFromServer\n";
-/*
-
-    std::string myLabelString = "";
-    myLabelString += "<font color='green'>";
-    myLabelString += clientConnection->peerAddress().toString().toStdString();
-    myLabelString += "</font>";
-    myStatusLabel->setText(myLabelString.c_str());
-
-    QTimer *timer = new QTimer;
-    timer->setSingleShot(true);*/
-
-
-    QObject::connect(   clientConnection,   SIGNAL(disconnected())  ,    this   ,    SLOT(disconnected())   );
-
-
-    in->startTransaction();
-
-
-
-    quint8 nextByte;
-    std::string retrievedString = "";
-    std::string binaryString = "";
-
-    int startingCol = 0;
-    if(leftoverIncomingData_column != -1){
-        //qDebug() << "using leftover data " << leftoverIncomingData.length();
-        binaryString = leftoverIncomingData;
-        startingCol = leftoverIncomingData_column;
-        leftoverIncomingData = "";
-    }
-
-    // loop until all data is reveived
-    while ( !in->atEnd() ) {
-        *in >> nextByte;
-        //qDebug() << "nextByte" << nextByte << "\n";
-        QString myQString;
-        myQString.append( tr("%1").arg(nextByte,2,16).replace(" ", "0") );
-        //qDebug() << "myQString" << tr("%1").arg(nextByte,2,16) << "\n";
-        retrievedString += myQString.toStdString();
-    }
-
-
-    // check if the retrieved data is empty
-    if(retrievedString.length() == 0){
-        qDebug() << "ERROR: empty frame\n";
-        return;
-    }
-
-
-    // print hex data to consol
-    //if(preferences->debugDataReceptionHex == true){
-        qDebug() << "myReveived hex:\n";
-        qDebug() << retrievedString.c_str() << "\n";
-    //}
-}
-
-
-
-void MainWindow::disconnected(){
-    qDebug() << "disconnected\n";
-
-}
 
 
 
@@ -530,3 +442,40 @@ bool MainWindow::findDataType(std::string filename, std::string dataType, std::v
 
 
 }
+
+
+
+void MainWindow::on_fileChanged(QString myFile){
+
+    // sometimes the operating system will trigger this method twice.
+    // therefore we measure the time difference since the last triggering
+    QDateTime lastWriteTime = QDateTime::currentDateTime();
+    int offset = lastWriteTime.msecsTo(lastRead);
+    lastRead = lastWriteTime;
+    if (offset < -100)
+    {
+
+        // else discard the (duplicated) OnChanged event
+        qDebug() << "on_fileChanged\n";
+
+
+        QMessageBox *msgBox = new QMessageBox(this);
+        msgBox->setText("<FONT COLOR='#000000'>The configuration file you have loaded has been modified.</FONT>");
+        msgBox->setInformativeText("<FONT COLOR='#000000'>Do you want to reload the file?</FONT>");
+        msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox->setIcon(QMessageBox::Warning);
+        int ret = msgBox->exec();
+
+        qDebug() << ret;
+        if(ret == QMessageBox::Yes){
+            qDebug() << "reloading";
+            qDebug() << myFile;
+            loadFile(myFile.toStdString());
+        }
+
+
+    }
+
+}
+
+
