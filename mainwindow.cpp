@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
 
+    qApp->setApplicationName("MoUI_onRails");
 
 
     lastRead = QDateTime::currentDateTime();
