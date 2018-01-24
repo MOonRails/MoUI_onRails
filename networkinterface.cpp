@@ -8,6 +8,11 @@
 #include <QTime>
 
 
+#include <QCoreApplication>
+#include <QSerialPort>
+#include <QStringList>
+#include <QTextStream>
+
 //! constructor
 // ###################################################################
 //NetworkInterface::NetworkInterface(QVBoxLayout *layout_base)
@@ -16,30 +21,68 @@ NetworkInterface::NetworkInterface(QVBoxLayout *layout_base, QMainWindow * mymai
     ui = myUi;
     //myServer = new QTcpServer();
 
-    pushButton_connect = new QPushButton("Connect");
-    //pushButton_connect->setFixedWidth(50);
-    pushButton_connect->setMaximumWidth(70);
+    pushButton_connectIP = new QPushButton("Connect IP");
+    pushButton_connectIP->setToolTip("Connect to desired IP address");
+    pushButton_connectIP->setFixedWidth(85);
 
 
+    pushButton_connectSerial = new QPushButton("Serial");
+    pushButton_connectSerial->setToolTip("Connect to selected serial port, (currently no data recpetion supported)");
+    pushButton_connectSerial->setFixedWidth(85);
 
+    QObject::connect(pushButton_connectIP, SIGNAL(clicked()), this , SLOT(on_pushButton_connectIP_clicked())  );
+    QObject::connect(pushButton_connectSerial, SIGNAL(clicked()), this , SLOT(on_pushButton_connectSerial_clicked())  );
 
-    QObject::connect(pushButton_connect, SIGNAL(clicked()), this , SLOT(on_pushButton_connect_clicked())  );
     lineEdit_ip = new QLineEdit();
-    //lineEdit_ip->setFixedWidth(94);
-    lineEdit_ip->setMaximumWidth(84);
+    lineEdit_ip->setMaximumWidth(77);
     lineEdit_ip->setText("127.0.0.1");
     lineEdit_port = new QLineEdit();
     lineEdit_port->setText("5555");
-    //lineEdit_port->setFixedWidth(94);
-    lineEdit_port->setMaximumWidth(84);
+    lineEdit_port->setMaximumWidth(77);
 
     QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Expanding,QSizePolicy::Minimum);
-    QHBoxLayout *layout_Horizontal = new QHBoxLayout();
-    layout_Horizontal->addWidget(lineEdit_ip);
-    layout_Horizontal->addWidget(lineEdit_port);
-    layout_Horizontal->addWidget(pushButton_connect);
-    layout_Horizontal->addSpacerItem(spacer);
-    layout_base->addLayout(layout_Horizontal);
+    QHBoxLayout *layout_Horizontal_ip = new QHBoxLayout();
+    layout_Horizontal_ip->addWidget(lineEdit_ip);
+    layout_Horizontal_ip->addWidget(lineEdit_port);
+    layout_Horizontal_ip->addWidget(pushButton_connectIP);
+    layout_Horizontal_ip->addSpacerItem(spacer);
+    layout_base->addLayout(layout_Horizontal_ip);
+
+
+    QSpacerItem *spacer2 = new QSpacerItem(20, 20, QSizePolicy::Expanding,QSizePolicy::Minimum);
+    QHBoxLayout *layout_Horizontal_serial = new QHBoxLayout();
+    combobox_serial = new QComboBox();
+
+
+
+    const auto infos = QSerialPortInfo::availablePorts();
+    for (const QSerialPortInfo &info : infos) {
+        QString s = QObject::tr("Port: ") + info.portName() + "\n"
+                + QObject::tr("Location: ") + info.systemLocation() + "\n"
+                + QObject::tr("Description: ") + info.description() + "\n"
+                + QObject::tr("Manufacturer: ") + info.manufacturer() + "\n"
+                + QObject::tr("Serial number: ") + info.serialNumber() + "\n"
+                + QObject::tr("Vendor Identifier: ") + (info.hasVendorIdentifier() ? QString::number(info.vendorIdentifier(), 16) : QString()) + "\n"
+                + QObject::tr("Product Identifier: ") + (info.hasProductIdentifier() ? QString::number(info.productIdentifier(), 16) : QString()) + "\n"
+                + QObject::tr("Busy: ") + (info.isBusy() ? QObject::tr("Yes") : QObject::tr("No")) + "\n";
+
+        QString label = info.portName() + " : " + info.description();
+
+        combobox_serial->addItem(label);
+
+        //serialPortsList << info.portName();
+        serialPortsList.append(info.portName());
+    }
+
+
+
+    combobox_serial->setFixedWidth(160);
+
+
+    layout_Horizontal_serial->addWidget(combobox_serial);
+    layout_Horizontal_serial->addWidget(pushButton_connectSerial);
+    layout_Horizontal_serial->addSpacerItem(spacer2);
+    layout_base->addLayout(layout_Horizontal_serial);
 
 
 
@@ -61,18 +104,18 @@ NetworkInterface::~NetworkInterface()
 
 //! connecting to an existing server
 // ###################################################################
-void NetworkInterface::on_pushButton_connect_clicked(){
-    qDebug() << "on_pushButton_connect_clicked\n";
+void NetworkInterface::on_pushButton_connectIP_clicked(){
+    qDebug() << "on_pushButton_connectIP_clicked\n";
 
 
 
-    if(connectButtonStatus == true){
+    if(connectionStatus == 1){
         //qDebug() << "disconnecting button\n";
         disconnecting();
         return;
     }
-    pushButton_connect->setText("Disconnect");
-    connectButtonStatus = true;
+    pushButton_connectIP->setText("Disconnect");
+    connectionStatus = 1;
 
 
 
@@ -114,7 +157,7 @@ void NetworkInterface::on_pushButton_connect_clicked(){
 
 
     clientConnection->connectToHost(QHostAddress(lineEdit_ip->text()), lineEdit_port->text().toInt());
-    qDebug() << "on_pushButton_connect_clicked2\n";
+    qDebug() << "on_pushButton_connectIP_clicked2\n";
 
     QObject::connect(   clientConnection,   &QAbstractSocket::connected  ,    this   ,    &NetworkInterface::inComingFromServer   );
 
@@ -276,7 +319,7 @@ void NetworkInterface::readIncoming(){
     in.startTransaction();
 
     while (clientConnection->bytesAvailable()){
-        if(connectButtonStatus == false){
+        if(connectionStatus == 0){
             return;
         }
         QString str;
@@ -315,8 +358,8 @@ void NetworkInterface::disconnecting(){
     //myConnectButton->setIcon(QIcon(":/icons/connect2.png"));
     //myListenButton->setText("Listen");
     //myListenButton->setIcon(QIcon(":/icons/server_connect2.png"));
-    pushButton_connect->setText("Connect");
-    connectButtonStatus = false;
+    pushButton_connectIP->setText("Connect IP");
+    connectionStatus = 0;
     qDebug() << "Disconnected!\n";
 }
 
@@ -346,7 +389,7 @@ void NetworkInterface::newConnection(){
 //! send a string to the server
 // ###################################################################
 void NetworkInterface::sendString(std::string myString){
-    if(connectButtonStatus == true){
+    if(connectionStatus == 1){ // connected on tcpip
         qDebug() << "Sending String: " << myString.c_str();
         myString += "\n";
         const char * myChar = myString.c_str();
@@ -355,7 +398,16 @@ void NetworkInterface::sendString(std::string myString){
 
         std::string myMessage = "Sending Command: " + myString;
         ui->statusBar->showMessage(myMessage.c_str());
-    } else {
+    } else if(connectionStatus == 2) { // connected to Serial port
+        qDebug() << "Sending String: " << myString.c_str();
+        myString += "\n";
+
+        serialPort->write(myString.c_str());
+        serialPort->flush();
+
+        std::string myMessage = "Sending Command: " + myString;
+        ui->statusBar->showMessage(myMessage.c_str());
+    } else { // no connection - connectionStatus == 0
         qDebug() << "No Connection to send Command: " << myString.c_str();
         std::string myMessage = "No Connection to send Command: " + myString;
         ui->statusBar->showMessage(myMessage.c_str());
@@ -391,4 +443,205 @@ void NetworkInterface::addPublishIP(PublishIP* myPublishIP){
 
 
 
+//! adding a publish ip object to the myPublishIP_list
+// ###################################################################
+void NetworkInterface::on_pushButton_connectSerial_clicked(){
 
+
+    if(connectionStatus == 2){
+        pushButton_connectSerial->setText("Serial");
+        connectionStatus = 0;
+        pushButton_connectIP->setEnabled(true);
+        pushButton_connectIP->setFlat(false);
+        serialPort->close();
+        return;
+    }
+
+    const auto infos = QSerialPortInfo::availablePorts();
+    //for (const QSerialPortInfo &info : infos) {
+    if(serialPortsList.size() != 0){
+        /*QString s = QObject::tr("Port: ") + info.portName() + "\n"
+                + QObject::tr("Location: ") + info.systemLocation() + "\n"
+                + QObject::tr("Description: ") + info.description() + "\n"
+                + QObject::tr("Manufacturer: ") + info.manufacturer() + "\n"
+                + QObject::tr("Serial number: ") + info.serialNumber() + "\n"
+                + QObject::tr("Vendor Identifier: ") + (info.hasVendorIdentifier() ? QString::number(info.vendorIdentifier(), 16) : QString()) + "\n"
+                + QObject::tr("Product Identifier: ") + (info.hasProductIdentifier() ? QString::number(info.productIdentifier(), 16) : QString()) + "\n"
+                + QObject::tr("Busy: ") + (info.isBusy() ? QObject::tr("Yes") : QObject::tr("No")) + "\n";
+*/
+        //auto label = new QLabel(s);
+        //layout->addWidget(label);
+        //qDebug() << "coms port readout:\n " << s;
+
+        //pushButton_connectSerial->setEnabled(false);
+
+        //QTextStream standardOutput(stdout);
+
+
+
+        serialPort = new QSerialPort();
+        const QString serialPortName = serialPortsList[combobox_serial->currentIndex()];
+        serialPort->setPortName(serialPortName);
+
+        const int serialPortBaudRate = 115200;/// info.standardBaudRates();
+        //QSerialPort::Baud9600;
+        serialPort->setBaudRate(serialPortBaudRate);
+
+        serialPort->setParity(QSerialPort::NoParity);
+
+        serialPort->setStopBits(QSerialPort::OneStop);
+        serialPort->setDataBits(QSerialPort::Data8);
+        serialPort->setFlowControl(QSerialPort::NoFlowControl);
+        serialPort->setStopBits(QSerialPort::OneStop);
+        if (!serialPort->open(QIODevice::ReadWrite)) {
+            qDebug() << QObject::tr("Failed to open port %1, error: %2")
+                              .arg(serialPortName).arg(serialPort->error()) << endl;
+            ui->statusBar->showMessage("Connection not possible");
+            return;
+
+        } else {
+
+            pushButton_connectSerial->setText("Disconnect");
+            connectionStatus = 2;
+            ui->statusBar->showMessage("Connected");
+
+            pushButton_connectIP->setEnabled(false);
+            pushButton_connectIP->setFlat(true);
+            qApp->processEvents();
+        }
+
+        QThread::sleep(2); // give the system some time to boot up
+
+        QString test2("2:1\n");
+        qDebug() << "out: " << test2;
+
+
+
+
+
+        serialPort->write(test2.toUtf8());
+        serialPort->flush();
+
+        //QElapsedTimer timer;
+        //timer.start();
+        //QThread::sleep(1);
+
+        QByteArray input;
+        //qDebug() << timer.elapsed();
+         serialPort->waitForBytesWritten(100);
+         serialPort->waitForReadyRead(100);
+        if(serialPort->bytesAvailable()>=18)
+         input = serialPort->read(18);
+        qDebug()<<input;
+
+
+/*
+        QByteArray readData = serialPort->readAll();
+        while (serialPort->waitForReadyRead(5000))
+            readData.append(serialPort->readAll());
+
+        if (serialPort->error() == QSerialPort::ReadError) {
+            qDebug() << QObject::tr("Failed to read from port %1, error: %2")
+                              .arg(serialPortName).arg(serialPort->errorString()) << endl;
+            return;
+        } else if (serialPort->error() == QSerialPort::TimeoutError && readData.isEmpty()) {
+            qDebug() << QObject::tr("No data was currently available"
+                                          " for reading from port %1")
+                              .arg(serialPortName) << endl;
+            return;
+        }
+
+        qDebug() << QObject::tr("Data successfully received from port %1")
+                          .arg(serialPortName) << endl;
+        qDebug() << readData << endl;
+
+
+*/
+        //pushButton_connectSerial->setEnabled(true);
+
+
+
+
+
+
+        return;
+    }
+
+
+    /*
+    serial.setPortName("COM18");
+    serial.setBaudRate(QSerialPort::Baud9600);
+    serial.setDataBits(QSerialPort::Data8);
+    serial.setParity(QSerialPort::NoParity);
+    serial.setStopBits(QSerialPort::OneStop);
+    serial.setFlowControl(QSerialPort::NoFlowControl);
+    serial.open(QIODevice::ReadWrite);
+    */
+
+
+
+
+    qDebug() << "no serial port found";
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+void NetworkInterface::openSerialPort()
+{
+    /*const SettingsDialog::Settings p = m_settings->settings();
+    m_serial->setPortName(p.name);
+    m_serial->setBaudRate(p.baudRate);
+    m_serial->setDataBits(p.dataBits);
+    m_serial->setParity(p.parity);
+    m_serial->setStopBits(p.stopBits);
+    m_serial->setFlowControl(p.flowControl);
+    if (m_serial->open(QIODevice::ReadWrite)) {
+        m_console->setEnabled(true);
+        m_console->setLocalEchoEnabled(p.localEchoEnabled);
+        m_ui->actionConnect->setEnabled(false);
+        m_ui->actionDisconnect->setEnabled(true);
+        m_ui->actionConfigure->setEnabled(false);
+        showStatusMessage(tr("Connected to %1 : %2, %3, %4, %5, %6")
+                          .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
+                          .arg(p.stringParity).arg(p.stringStopBits).arg(p.stringFlowControl));
+    } else {
+        QMessageBox::critical(this, tr("Error"), m_serial->errorString());
+
+        showStatusMessage(tr("Open error"));
+    }*/
+}
+
+
+void NetworkInterface::closeSerialPort()
+{
+    /*if (m_serial->isOpen())
+        m_serial->close();
+    m_console->setEnabled(false);
+    m_ui->actionConnect->setEnabled(true);
+    m_ui->actionDisconnect->setEnabled(false);
+    m_ui->actionConfigure->setEnabled(true);
+    showStatusMessage(tr("Disconnected"));*/
+}
+
+
+void NetworkInterface::writeData(const QByteArray &data)
+{
+    serialPort->write(data);
+}
+
+
+void NetworkInterface::readData()
+{
+    /*const QByteArray data = m_serial->readAll();
+    m_console->putData(data);*/
+}

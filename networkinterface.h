@@ -16,6 +16,13 @@
 #include "publiship.h"
 #include <QByteArray>
 
+
+#include <iostream>
+
+#include <QSerialPort>
+#include <QSerialPortInfo>
+#include <QElapsedTimer>
+#include <QThread>
 class QLabel;
 class QPushButton;
 class QTcpServer;
@@ -36,7 +43,11 @@ public:
     void addPublishIP(PublishIP* myPublishIP);
 private:
 
-    QPushButton* pushButton_connect;
+    QList<QString> serialPortsList;
+
+    QPushButton* pushButton_connectIP;
+    QPushButton* pushButton_connectSerial;
+    QComboBox* combobox_serial;
     QLineEdit* lineEdit_ip;
     QLineEdit* lineEdit_port;
     QByteArray buffer;
@@ -49,15 +60,28 @@ private:
     QNetworkSession *networkSession;
     QDataStream in;
 
-    bool connectButtonStatus = false;
+
+    QSerialPort *serialPort;
+
+    bool connectButtonStatus = false; // replaced by connectionStatus
 
     QMainWindow* mainwindow;
     Ui::MainWindow * ui;
 
     int leftoverIncomingData_column = -1;
     std::string leftoverIncomingData = "";
+
+
+    int connectionStatus = 0;
+    // 0 = No connection
+    // 1 = connected to IP
+    // 2 = connected to Serial Port
+
 private slots:
-    void on_pushButton_connect_clicked();
+
+
+    void on_pushButton_connectIP_clicked();
+    void on_pushButton_connectSerial_clicked();
     void newConnection();
     void disconnecting();
     void disconnected();
@@ -70,6 +94,12 @@ private slots:
     void sessionOpened();
     //void myServerNewConnection();
     void listeningToIncomingData();
+
+
+    void openSerialPort();
+    void closeSerialPort();
+    void writeData(const QByteArray &data);
+    void readData();
 };
 
 #endif // NETWORKINTERFACE_H

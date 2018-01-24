@@ -26,6 +26,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 QT += charts
 QT += network
+QT += serialport
+
 
 SOURCES += main.cpp\
         mainwindow.cpp \
