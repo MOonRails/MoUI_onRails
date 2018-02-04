@@ -1,3 +1,4 @@
+
 #include "networkinterface.h"
 //#include "mainwindow.h"
 
@@ -20,6 +21,7 @@ NetworkInterface::NetworkInterface(QVBoxLayout *layout_base, QMainWindow * mymai
 {
     ui = myUi;
     //myServer = new QTcpServer();
+
 
     pushButton_connectIP = new QPushButton("Connect IP");
     pushButton_connectIP->setToolTip("Connect to desired IP address");
@@ -112,6 +114,8 @@ void NetworkInterface::on_pushButton_connectIP_clicked(){
     if(connectionStatus == 1){
         //qDebug() << "disconnecting button\n";
         disconnecting();
+        pushButton_connectSerial->setEnabled(true);
+        pushButton_connectSerial->setFlat(false);
         return;
     }
     pushButton_connectIP->setText("Disconnect");
@@ -152,6 +156,8 @@ void NetworkInterface::on_pushButton_connectIP_clicked(){
 
     lineEdit_ip->setDisabled(true);
     lineEdit_port->setDisabled(true);
+    pushButton_connectSerial->setEnabled(false);
+    pushButton_connectSerial->setFlat(true);
 
 
 
@@ -307,13 +313,12 @@ void NetworkInterface::inComingFromServer(){
 }
 
 
+
+
 //! read incoming data from server
 // ###################################################################
 void NetworkInterface::readIncoming(){
     qDebug() << "readIncoming: ";
-
-
-
 
 
     in.startTransaction();
@@ -406,6 +411,9 @@ void NetworkInterface::sendString(std::string myString){
         serialPort->flush();
 
         std::string myMessage = "Sending Command: " + myString;
+        lastCommandSend = myString.c_str();
+        lastCommandSend.remove(QRegExp("[\\n\\t\\r]"));
+
         ui->statusBar->showMessage(myMessage.c_str());
     } else { // no connection - connectionStatus == 0
         qDebug() << "No Connection to send Command: " << myString.c_str();
@@ -416,7 +424,7 @@ void NetworkInterface::sendString(std::string myString){
 }
 
 
-//! send a string to the server
+//! pusblish a received string into one of the graphs in our display
 // ###################################################################
 void NetworkInterface::pusblishIp_String(std::string myNumber,std::string myText){
     qDebug() << "myNumber: " << myNumber.c_str() << "myText: " << myText.c_str();
@@ -425,8 +433,6 @@ void NetworkInterface::pusblishIp_String(std::string myNumber,std::string myText
     qDebug() << "myNumber: " << myQText.toFloat();
     for (int i = 0; i < myPublishIP_list.size(); ++i) {
         if(myPublishIP_list[i]->number == myNumber){
-            //qDebug() << "found " << myPublishIP_list[i]->name.c_str();
-            //myPublishIP_list[i]->setValue(21);
             myPublishIP_list[i]->setValue(myQText.toFloat());
         }
     }
@@ -451,6 +457,7 @@ void NetworkInterface::on_pushButton_connectSerial_clicked(){
     if(connectionStatus == 2){
         pushButton_connectSerial->setText("Serial");
         connectionStatus = 0;
+        combobox_serial->setEnabled(true);
         pushButton_connectIP->setEnabled(true);
         pushButton_connectIP->setFlat(false);
         serialPort->close();
@@ -458,24 +465,9 @@ void NetworkInterface::on_pushButton_connectSerial_clicked(){
     }
 
     const auto infos = QSerialPortInfo::availablePorts();
-    //for (const QSerialPortInfo &info : infos) {
+
+
     if(serialPortsList.size() != 0){
-        /*QString s = QObject::tr("Port: ") + info.portName() + "\n"
-                + QObject::tr("Location: ") + info.systemLocation() + "\n"
-                + QObject::tr("Description: ") + info.description() + "\n"
-                + QObject::tr("Manufacturer: ") + info.manufacturer() + "\n"
-                + QObject::tr("Serial number: ") + info.serialNumber() + "\n"
-                + QObject::tr("Vendor Identifier: ") + (info.hasVendorIdentifier() ? QString::number(info.vendorIdentifier(), 16) : QString()) + "\n"
-                + QObject::tr("Product Identifier: ") + (info.hasProductIdentifier() ? QString::number(info.productIdentifier(), 16) : QString()) + "\n"
-                + QObject::tr("Busy: ") + (info.isBusy() ? QObject::tr("Yes") : QObject::tr("No")) + "\n";
-*/
-        //auto label = new QLabel(s);
-        //layout->addWidget(label);
-        //qDebug() << "coms port readout:\n " << s;
-
-        //pushButton_connectSerial->setEnabled(false);
-
-        //QTextStream standardOutput(stdout);
 
 
 
@@ -484,7 +476,6 @@ void NetworkInterface::on_pushButton_connectSerial_clicked(){
         serialPort->setPortName(serialPortName);
 
         const int serialPortBaudRate = 115200;/// info.standardBaudRates();
-        //QSerialPort::Baud9600;
         serialPort->setBaudRate(serialPortBaudRate);
 
         serialPort->setParity(QSerialPort::NoParity);
@@ -505,78 +496,39 @@ void NetworkInterface::on_pushButton_connectSerial_clicked(){
             connectionStatus = 2;
             ui->statusBar->showMessage("Connected");
 
+            combobox_serial->setEnabled(false);
             pushButton_connectIP->setEnabled(false);
             pushButton_connectIP->setFlat(true);
+
             qApp->processEvents();
         }
 
-        QThread::sleep(2); // give the system some time to boot up
+        /*QThread::sleep(2); // give the system some time to boot up
 
         QString test2("2:1\n");
         qDebug() << "out: " << test2;
 
 
-
-
-
         serialPort->write(test2.toUtf8());
         serialPort->flush();
 
-        //QElapsedTimer timer;
-        //timer.start();
-        //QThread::sleep(1);
 
         QByteArray input;
-        //qDebug() << timer.elapsed();
-         serialPort->waitForBytesWritten(100);
-         serialPort->waitForReadyRead(100);
+
+        serialPort->waitForBytesWritten(100);
+        serialPort->waitForReadyRead(100);
         if(serialPort->bytesAvailable()>=18)
-         input = serialPort->read(18);
-        qDebug()<<input;
+            input = serialPort->read(18);
+        qDebug()<<input;*/
 
 
-/*
-        QByteArray readData = serialPort->readAll();
-        while (serialPort->waitForReadyRead(5000))
-            readData.append(serialPort->readAll());
-
-        if (serialPort->error() == QSerialPort::ReadError) {
-            qDebug() << QObject::tr("Failed to read from port %1, error: %2")
-                              .arg(serialPortName).arg(serialPort->errorString()) << endl;
-            return;
-        } else if (serialPort->error() == QSerialPort::TimeoutError && readData.isEmpty()) {
-            qDebug() << QObject::tr("No data was currently available"
-                                          " for reading from port %1")
-                              .arg(serialPortName) << endl;
-            return;
-        }
-
-        qDebug() << QObject::tr("Data successfully received from port %1")
-                          .arg(serialPortName) << endl;
-        qDebug() << readData << endl;
-
-
-*/
-        //pushButton_connectSerial->setEnabled(true);
-
-
-
+        QObject::connect(   serialPort,   &QIODevice::readyRead   ,    this   , &NetworkInterface::readIncomingFromSerial );
 
 
 
         return;
     }
 
-
-    /*
-    serial.setPortName("COM18");
-    serial.setBaudRate(QSerialPort::Baud9600);
-    serial.setDataBits(QSerialPort::Data8);
-    serial.setParity(QSerialPort::NoParity);
-    serial.setStopBits(QSerialPort::OneStop);
-    serial.setFlowControl(QSerialPort::NoFlowControl);
-    serial.open(QIODevice::ReadWrite);
-    */
 
 
 
@@ -598,39 +550,13 @@ void NetworkInterface::on_pushButton_connectSerial_clicked(){
 
 void NetworkInterface::openSerialPort()
 {
-    /*const SettingsDialog::Settings p = m_settings->settings();
-    m_serial->setPortName(p.name);
-    m_serial->setBaudRate(p.baudRate);
-    m_serial->setDataBits(p.dataBits);
-    m_serial->setParity(p.parity);
-    m_serial->setStopBits(p.stopBits);
-    m_serial->setFlowControl(p.flowControl);
-    if (m_serial->open(QIODevice::ReadWrite)) {
-        m_console->setEnabled(true);
-        m_console->setLocalEchoEnabled(p.localEchoEnabled);
-        m_ui->actionConnect->setEnabled(false);
-        m_ui->actionDisconnect->setEnabled(true);
-        m_ui->actionConfigure->setEnabled(false);
-        showStatusMessage(tr("Connected to %1 : %2, %3, %4, %5, %6")
-                          .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
-                          .arg(p.stringParity).arg(p.stringStopBits).arg(p.stringFlowControl));
-    } else {
-        QMessageBox::critical(this, tr("Error"), m_serial->errorString());
 
-        showStatusMessage(tr("Open error"));
-    }*/
 }
 
 
 void NetworkInterface::closeSerialPort()
 {
-    /*if (m_serial->isOpen())
-        m_serial->close();
-    m_console->setEnabled(false);
-    m_ui->actionConnect->setEnabled(true);
-    m_ui->actionDisconnect->setEnabled(false);
-    m_ui->actionConfigure->setEnabled(true);
-    showStatusMessage(tr("Disconnected"));*/
+
 }
 
 
@@ -642,6 +568,63 @@ void NetworkInterface::writeData(const QByteArray &data)
 
 void NetworkInterface::readData()
 {
-    /*const QByteArray data = m_serial->readAll();
-    m_console->putData(data);*/
+
 }
+
+
+
+//! data incoming from concected serial port
+// ###################################################################
+void NetworkInterface::readIncomingFromSerial(){
+
+    QByteArray readData = serialPort->readAll();
+
+    if (serialPort->error() == QSerialPort::ReadError) {
+        qDebug() << QObject::tr("Failed to read from port %1, error: %2")
+                    .arg("serialPortName").arg(serialPort->errorString());
+        return;
+    } else if (serialPort->error() == QSerialPort::TimeoutError && readData.isEmpty()) {
+        qDebug() << QObject::tr("No data was currently available"
+                                " for reading from port %1")
+                    .arg("serialPortName");
+        return;
+    }
+
+    QString DataAsString(readData);
+    QString DataAsStringSub = DataAsString;
+    //qDebug() << "first 3 chras " << DataAsStringSub.mid(0,3);
+
+    if(DataAsStringSub.mid(0,3) == "STR"){
+
+        //qDebug() << "STR " << DataAsString;
+        DataAsString.remove(QRegExp("[\\n\\t\\r]"));
+        QStringList pieces = DataAsString.split( "STR::" );
+
+        qDebug() << "STR " << pieces[pieces.size()-2];
+
+
+
+        if (pieces[pieces.size()-2] == lastCommandSend){
+            std::string myMessage = "Sending Command: " + lastCommandSend.toStdString() + " - confirmed";
+            lastCommandSend = "";
+            ui->statusBar->showMessage(myMessage.c_str());
+        }
+        return;
+    } else if(DataAsStringSub.mid(0,3) == "TR:") {
+        qDebug() << "TR: " << DataAsString;
+        return;
+    }
+
+
+    DataAsString.remove(QRegExp("[\\n\\t\\r]"));
+    //qDebug() << "DataAsString removed " << DataAsString;
+
+
+    QStringList pieces = DataAsString.split( ":" );
+    //qDebug() << "piece 0 " << pieces[0];
+    //qDebug() << "piece 1 " << pieces[1];
+    pusblishIp_String(pieces[0].toStdString(),pieces[1].toStdString()   );
+
+
+}
+

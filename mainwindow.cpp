@@ -3,7 +3,7 @@
 
 
 
-#include <QXmlSimpleReader>
+//#include <QXmlSimpleReader>
 #include <QtWidgets>
 #include <QObject>
 #include <QDebug>
@@ -14,7 +14,7 @@
 
 #include <iostream>
 #include <fstream>
-
+#include <QCloseEvent>
 
 
 //! constructor
@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     treeWidget->setMaximumWidth(250);
 
 
-    pushButton_file = new QPushButton("Open");
+    pushButton_file = new QPushButton("Open Config File");
     pushButton_file->setFixedWidth(250);
     QObject::connect(pushButton_file, SIGNAL(clicked()), this , SLOT(on_pushButton_file_clicked())  );
 
@@ -480,3 +480,19 @@ void MainWindow::on_fileChanged(QString myFile){
 }
 
 
+void MainWindow::closeEvent (QCloseEvent *event)
+{
+    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "Are you sure?",
+                                                                "Are you sure?",
+                                                                QMessageBox::Cancel | QMessageBox::No | QMessageBox::Yes,
+                                                                QMessageBox::Yes);
+    if (resBtn != QMessageBox::Yes) {
+        event->ignore();
+    } else {
+        if(networkInterface->connectionStatus == 2){
+            networkInterface->serialPort->close();
+        }
+
+        event->accept();
+    }
+}

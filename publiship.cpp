@@ -32,7 +32,6 @@ PublishIP::PublishIP(QVBoxLayout *layout_base,std::string myName, std::string my
     // initialise graph
     //myReceptionChart.push_back(chart);
     chart->legend()->show();
-    chart->createDefaultAxes();
     //chart->setTitle(myName.c_str());
     chart->createDefaultAxes();
 
@@ -54,6 +53,14 @@ PublishIP::PublishIP(QVBoxLayout *layout_base,std::string myName, std::string my
     axisX->setTickCount(10);
     axisX->setLabelFormat("%.2f");
     chartView->chart()->setAxisX(axisX, series);
+
+    //chartView->setRubberBand(QChartView::VerticalRubberBand);
+    //chart->axisY()->setRange(0,1000);
+
+    //axisY = new QValueAxis;
+    //axisY->setRange(0, 1000);
+    //chartView->chart()->setAxisY(axisY, series);
+    chartView->setMinimumSize(QSize(250,250));
 
     contentArea = new QScrollArea();
     contentArea->setStyleSheet("QScrollArea {  border: none; }");
@@ -99,6 +106,7 @@ void PublishIP::setValue(int myValue)
     }
 
     chart->removeSeries(series);
+
 
     if(chartCounter > 100){
         series->remove(0);

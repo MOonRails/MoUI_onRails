@@ -40,6 +40,14 @@ public:
 
     void sendString(std::string myString);
     void pusblishIp_String(std::string myNumber,std::string myText);
+
+    int connectionStatus = 0;
+    // 0 = No connection
+    // 1 = connected to IP
+    // 2 = connected to Serial Port
+
+
+    QSerialPort *serialPort;
     void addPublishIP(PublishIP* myPublishIP);
 private:
 
@@ -60,8 +68,8 @@ private:
     QNetworkSession *networkSession;
     QDataStream in;
 
+    bool receptionExclusion = false;
 
-    QSerialPort *serialPort;
 
     bool connectButtonStatus = false; // replaced by connectionStatus
 
@@ -71,11 +79,9 @@ private:
     int leftoverIncomingData_column = -1;
     std::string leftoverIncomingData = "";
 
+    QString lastCommandSend = "";
 
-    int connectionStatus = 0;
-    // 0 = No connection
-    // 1 = connected to IP
-    // 2 = connected to Serial Port
+
 
 private slots:
 
@@ -88,6 +94,8 @@ private slots:
     void inComingFromServer();
     void connection();
     void readIncoming();
+
+    void readIncomingFromSerial();
 
 
     void displayConnectionError(QAbstractSocket::SocketError socketError);

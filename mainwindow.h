@@ -61,6 +61,7 @@ private slots:
     void on_pushButton_file_clicked();
 
     void on_fileChanged(QString myFile);
+    void closeEvent (QCloseEvent *event);
 };
 
 #endif // MAINWINDOW_H
